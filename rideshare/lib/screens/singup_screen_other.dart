@@ -12,14 +12,14 @@ import 'dart:io';
 
 import 'package:rideshare/utils/utils.dart';
 
-class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+class SignUpScreenOther extends StatefulWidget {
+  const SignUpScreenOther({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  State<SignUpScreenOther> createState() => _SignUpScreenOtherState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignUpScreenOtherState extends State<SignUpScreenOther> {
   File? image;
   final TextEditingController _passwordTextController = TextEditingController();
   final TextEditingController _emailTextController = TextEditingController();

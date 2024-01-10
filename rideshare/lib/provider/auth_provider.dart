@@ -120,6 +120,18 @@ class AuthenticationProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> checkIfUserExistsEmail(String email) async {
+    QuerySnapshot query = await _firebaseFirestore
+        .collection("users")
+        .where('email', isEqualTo: email)
+        .get();
+    if (query.docs.length == 0) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   void saveUserDataToFirebase({
     required BuildContext context,
     required UserModel userModel,
