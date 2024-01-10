@@ -7,15 +7,21 @@ import 'package:country_picker/country_picker.dart';
 import 'package:rideshare/provider/auth_provider.dart';
 import 'package:rideshare/utils/utils.dart';
 
-class PhoneRegistration extends StatefulWidget {
-  const PhoneRegistration({super.key});
+class Registration extends StatefulWidget {
+  const Registration({super.key});
 
   @override
-  State<PhoneRegistration> createState() => _PhoneRegistrationState();
+  State<Registration> createState() => _RegistrationState();
 }
 
-class _PhoneRegistrationState extends State<PhoneRegistration> {
+class _RegistrationState extends State<Registration> {
   final TextEditingController _phoneNumberController = TextEditingController();
+
+  @override
+  void dispose() {
+    super.dispose();
+    _phoneNumberController.dispose();
+  }
 
   Country selectedCountry = Country(
       phoneCode: "1",
@@ -177,7 +183,31 @@ class _PhoneRegistrationState extends State<PhoneRegistration> {
                   padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                   child: firebaseUIButton(
                       context, "Register", () => sendPhoneNumber()),
-                )
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(5, 30, 5, 0),
+                  child: Row(children: [
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10.0),
+                      child: Text(
+                        'Or Sign Up With',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        thickness: 0.5,
+                        color: Colors.grey[400],
+                      ),
+                    ),
+                  ]),
+                ),
               ],
             ),
           )),

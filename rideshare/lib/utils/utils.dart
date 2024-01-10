@@ -7,11 +7,14 @@ import 'package:image_picker/image_picker.dart';
 void showSnackBar(BuildContext context, String title, String content,
     ContentType contentType) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    margin: EdgeInsets.fromLTRB(0, 150, 0, 0),
+    margin: const EdgeInsets.fromLTRB(0, 150, 0, 0),
     backgroundColor: Colors.transparent,
     elevation: 0,
-    content: AwesomeSnackbarContent(
-        title: title, message: content, contentType: contentType),
+    content: Transform.scale(
+      scale: 0.9,
+      child: AwesomeSnackbarContent(
+          title: title, message: content, contentType: contentType),
+    ),
     behavior: SnackBarBehavior.floating,
   ));
 }

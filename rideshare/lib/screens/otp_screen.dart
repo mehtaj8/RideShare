@@ -91,6 +91,7 @@ class _OtpScreenState extends State<OtpScreen> {
                         ),
                       ),
 
+                      // Pin Input
                       Padding(
                         padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
                         child: Pinput(
