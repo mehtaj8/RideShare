@@ -129,8 +129,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
                   child: FadeAnimation(
                     1.6,
-                    reusableTextField(
-                        "E-Mail", Icons.email_outlined, _emailTextController),
+                    reusableTextField("E-Mail", Icons.email_outlined,
+                        _emailTextController, false),
                   ),
                 ),
 

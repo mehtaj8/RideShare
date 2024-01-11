@@ -101,8 +101,8 @@ class _ResetPasswordState extends State<ResetPassword> {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
-                  child: reusableTextField(
-                      "E-Mail", Icons.person_outline, _emailTextController),
+                  child: reusableTextField("E-Mail", Icons.person_outline,
+                      _emailTextController, false),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),

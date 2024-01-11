@@ -1,4 +1,5 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:country_picker/country_picker.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -25,9 +26,22 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
   final TextEditingController _emailTextController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
 
   bool isPasswordVisible = true;
   bool isChecked = false;
+
+  Country selectedCountry = Country(
+      phoneCode: "1",
+      countryCode: "CA",
+      e164Sc: 0,
+      geographic: true,
+      level: 1,
+      name: "Canada",
+      example: "Canada",
+      displayName: "Canada",
+      displayNameNoCountryCode: "CA",
+      e164Key: "");
 
   @override
   void dispose() {
@@ -36,6 +50,7 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
     _emailTextController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _phoneNumberController.dispose();
   }
 
   // Selecting Image
@@ -97,7 +112,6 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: InkWell(
-                          onTap: () => selectImage(),
                           child: image == null
                               ? CircleAvatar(
                                   backgroundColor: hexStringToColor("ffcc66")
@@ -110,17 +124,9 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                                   ),
                                 )
                               : CircleAvatar(
-                                  backgroundImage: FileImage(image!),
+                                  backgroundImage: getProfilePic(context),
                                   radius: 50,
                                 ),
-                        ),
-                      ),
-
-                      Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                        child: const Text(
-                          "Please add a Profile Picture",
-                          style: TextStyle(color: Colors.white, fontSize: 15),
                         ),
                       ),
 
@@ -130,15 +136,21 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                         child: Row(
                           children: <Widget>[
                             Expanded(
-                              child: reusableTextField("First Name",
-                                  Icons.person_outline, _firstNameController),
+                              child: reusableTextField(
+                                  "First Name",
+                                  Icons.person_outline,
+                                  _firstNameController,
+                                  false),
                             ),
                             const SizedBox(
                               width: 16.0,
                             ),
                             Expanded(
-                              child: reusableTextField("Last Name",
-                                  Icons.person_outline, _lastNameController),
+                              child: reusableTextField(
+                                  "Last Name",
+                                  Icons.person_outline,
+                                  _lastNameController,
+                                  false),
                             ),
                           ],
                         ),
@@ -148,7 +160,7 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: reusableTextField("E-Mail", Icons.email_outlined,
-                            _emailTextController),
+                            _emailTextController, true),
                       ),
 
                       // Password Box
@@ -208,6 +220,89 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                             ),
                           )),
 
+                      // Phone Number Box
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: TextField(
+                          // Type of controller
+                          controller: _phoneNumberController,
+
+                          // Configurations
+                          cursorColor: Colors.white,
+
+                          onChanged: (value) {
+                            setState(() {
+                              _phoneNumberController.text = value;
+                            });
+                          },
+                          style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 18),
+
+                          // Add decoration to text box
+                          decoration: InputDecoration(
+                            // Prefixed icon
+                            prefixIcon: Container(
+                              padding: const EdgeInsets.fromLTRB(10, 11, 10, 0),
+                              child: InkWell(
+                                onTap: () {
+                                  showCountryPicker(
+                                      context: context,
+                                      countryListTheme:
+                                          const CountryListThemeData(
+                                              bottomSheetHeight: 500),
+                                      onSelect: (value) {
+                                        setState(() {
+                                          selectedCountry = value;
+                                        });
+                                      });
+                                },
+                                child: Text(
+                                  "${selectedCountry.flagEmoji} + ${selectedCountry.phoneCode}",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white.withOpacity(0.9)),
+                                ),
+                              ),
+                            ),
+
+                            suffixIcon: _phoneNumberController.text.length > 9
+                                ? Container(
+                                    height: 30,
+                                    width: 30,
+                                    margin:
+                                        const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.green,
+                                    ),
+                                    child: const Icon(Icons.done,
+                                        color: Colors.white, size: 20),
+                                  )
+                                : null,
+
+                            // Test Styling
+                            labelText: "Phone Number",
+                            labelStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.9)),
+                            filled: false,
+                            floatingLabelBehavior: FloatingLabelBehavior.never,
+                            fillColor: Colors.white.withOpacity(0.3),
+
+                            // Border Styling
+                            enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                                borderSide: const BorderSide(
+                                    color: Colors.white,
+                                    width: 2,
+                                    style: BorderStyle.solid)),
+                            border: const OutlineInputBorder(),
+                          ),
+
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+
                       // Terms and Conditions
                       Padding(
                         padding: const EdgeInsets.fromLTRB(10, 20, 0, 0),
@@ -255,42 +350,24 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                         padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                         child: firebaseUIButton(context, "Create Account", () {
                           if (isChecked) {
-                            final authProvider =
-                                Provider.of<AuthenticationProvider>(context,
-                                    listen: false);
-
-                            if (_firstNameController.text != "" &&
-                                _lastNameController.text != "" &&
-                                _emailTextController.text != "" &&
-                                _passwordTextController.text != "") {
-                              if (EmailValidator.validate(
-                                  _emailTextController.text)) {
-                                if (_passwordTextController.text.length >= 6) {
-                                  final AuthCredential authCredential =
-                                      EmailAuthProvider.credential(
-                                          email: _emailTextController.text,
-                                          password:
-                                              _passwordTextController.text);
-                                  authProvider.linkUserData(authCredential);
-                                  storeData();
-                                } else {
-                                  showSnackBar(
-                                      context,
-                                      "Oops!",
-                                      "Password length must be atleast 6 characters",
-                                      ContentType.help);
-                                }
-                              } else {
-                                showSnackBar(context, "Oops!", "Invalid Email",
-                                    ContentType.warning);
-                              }
-                            } else {
+                            // Check if any are empty
+                            if (_firstNameController.text == "" ||
+                                _lastNameController.text == "" ||
+                                _emailTextController.text == "" ||
+                                _passwordTextController.text == "" ||
+                                _phoneNumberController.text == "") {
                               showSnackBar(
                                   context,
                                   "Oops!",
                                   "Please fill in all fields",
                                   ContentType.warning);
                             }
+
+                            // Validate E-Mail
+                            sendEmail(context, _emailTextController.text,
+                                _passwordTextController.text);
+                            sendPhoneNumber(
+                                context, _phoneNumberController.text);
                           } else {
                             showSnackBar(
                                 context,
@@ -337,6 +414,25 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
     } else {
       showSnackBar(context, "Oops!", "Please Upload a Profile Picture",
           ContentType.help);
+    }
+  }
+
+  void sendEmail(BuildContext context, String email, String password) {
+    final authProvider =
+        Provider.of<AuthenticationProvider>(context, listen: false);
+    if (EmailValidator.validate(_emailTextController.text)) {
+      if (_passwordTextController.text.length >= 6) {
+        final AuthCredential authCredential =
+            EmailAuthProvider.credential(email: email, password: password);
+        authProvider.linkUserData(authCredential);
+
+        storeData();
+      } else {
+        showSnackBar(context, "Oops!",
+            "Password length must be atleast 6 characters", ContentType.help);
+      }
+    } else {
+      showSnackBar(context, "Oops!", "Invalid Email", ContentType.warning);
     }
   }
 }

@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rideshare/model/user_model.dart';
 import 'package:rideshare/screens/otp_screen.dart';
 import 'package:rideshare/utils/utils.dart';
@@ -29,6 +30,10 @@ class AuthenticationProvider extends ChangeNotifier {
 
   AuthenticationProvider() {
     checkSignIn();
+  }
+
+  getCurrenuser() async {
+    return await _firebaseAuth.currentUser;
   }
 
   void checkSignIn() async {
@@ -71,6 +76,57 @@ class AuthenticationProvider extends ChangeNotifier {
         codeAutoRetrievalTimeout: (verificationId) {});
   }
 
+  void signInWithGoogle(BuildContext context, Function onSuccess) async {
+    _isLoading = true;
+    notifyListeners();
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    final GoogleSignInAccount? googleSignInAccount =
+        await googleSignIn.signIn();
+
+    final GoogleSignInAuthentication? googleSignInAuthentication =
+        await googleSignInAccount?.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleSignInAuthentication?.idToken,
+        accessToken: googleSignInAuthentication?.accessToken);
+
+    UserCredential result =
+        await _firebaseAuth.signInWithCredential(credential);
+
+    User? userDetails = result.user;
+
+    if (userDetails != null) {
+      _uid = userDetails.uid;
+      onSuccess();
+    }
+
+    if (userDetails != null) {
+      UserModel userModel = UserModel(
+          firstName: "",
+          lastName: "",
+          email: userDetails.email!,
+          phoneNumber: "",
+          profilePic: userDetails.photoURL!,
+          createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+          uid: userDetails.uid);
+
+      try {
+        await _firebaseFirestore
+            .collection("users")
+            .doc(_uid)
+            .set(userModel.toMap())
+            .whenComplete(() {
+          onSuccess();
+          _isLoading = false;
+          notifyListeners();
+        });
+      } on FirebaseAuthException catch (e) {
+        showSnackBar(
+            context, "Error", e.message.toString(), ContentType.failure);
+      }
+    }
+  }
+
   void verifyOtp({
     required BuildContext context,
     required String verificationId,
@@ -91,9 +147,6 @@ class AuthenticationProvider extends ChangeNotifier {
         _uid = user.uid;
         onSuccess();
       }
-
-      _isLoading = false;
-      notifyListeners();
     } on FirebaseAuthException catch (e) {
       if (e.code == "invalid-verification-code") {
         showSnackBar(

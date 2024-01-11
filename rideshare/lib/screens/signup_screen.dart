@@ -130,15 +130,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         child: Row(
                           children: <Widget>[
                             Expanded(
-                              child: reusableTextField("First Name",
-                                  Icons.person_outline, _firstNameController),
+                              child: reusableTextField(
+                                  "First Name",
+                                  Icons.person_outline,
+                                  _firstNameController,
+                                  false),
                             ),
                             const SizedBox(
                               width: 16.0,
                             ),
                             Expanded(
-                              child: reusableTextField("Last Name",
-                                  Icons.person_outline, _lastNameController),
+                              child: reusableTextField(
+                                  "Last Name",
+                                  Icons.person_outline,
+                                  _lastNameController,
+                                  false),
                             ),
                           ],
                         ),
@@ -148,7 +154,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: reusableTextField("E-Mail", Icons.email_outlined,
-                            _emailTextController),
+                            _emailTextController, false),
                       ),
 
                       // Password Box

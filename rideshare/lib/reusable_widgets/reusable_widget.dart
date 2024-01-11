@@ -1,5 +1,22 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:rideshare/provider/auth_provider.dart';
 import 'package:rideshare/utils/color_utils.dart';
+import 'package:rideshare/utils/utils.dart';
+
+Country selectedCountry = Country(
+    phoneCode: "1",
+    countryCode: "CA",
+    e164Sc: 0,
+    geographic: true,
+    level: 1,
+    name: "Canada",
+    example: "Canada",
+    displayName: "Canada",
+    displayNameNoCountryCode: "CA",
+    e164Key: "");
 
 Stack logoWidget(BuildContext context) {
   // return Image.asset(
@@ -38,8 +55,8 @@ Stack logoWidget(BuildContext context) {
       ]);
 }
 
-TextField reusableTextField(
-    String text, IconData icon, TextEditingController controller) {
+TextField reusableTextField(String text, IconData icon,
+    TextEditingController controller, bool readOnly) {
   return TextField(
     // Type of controller
     controller: controller,
@@ -47,6 +64,7 @@ TextField reusableTextField(
     // Configurations
     cursorColor: Colors.white,
     style: TextStyle(color: Colors.white.withOpacity(0.9)),
+    readOnly: readOnly,
 
     // Add decoration to text box
     decoration: InputDecoration(
@@ -108,4 +126,36 @@ Container firebaseUIButton(BuildContext context, String title, Function onTap) {
       ),
     ),
   );
+}
+
+Row GoogleButton(BuildContext context, String title, Function onTap) {
+  return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+    GestureDetector(
+      onTap: () => onTap,
+      child: Image.asset(
+        "assets/images/google.png",
+        height: 45,
+        width: 45,
+        fit: BoxFit.cover,
+      ),
+    )
+  ]);
+}
+
+void sendPhoneNumber(BuildContext context, String phoneNumber) {
+  final authProvider =
+      Provider.of<AuthenticationProvider>(context, listen: false);
+  if (phoneNumber.length <= 9) {
+    showSnackBar(context, "Error", "The Provided Phone Number is not Valid.",
+        ContentType.failure);
+  } else {
+    authProvider.signInWithPhone(
+        context, "+${selectedCountry.phoneCode}$phoneNumber");
+  }
+}
+
+NetworkImage getProfilePic(BuildContext context) {
+  final authProvider =
+      Provider.of<AuthenticationProvider>(context, listen: false);
+  return NetworkImage(authProvider.userModel.profilePic);
 }
