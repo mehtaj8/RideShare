@@ -82,11 +82,10 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
             color: hexStringToColor("6c7373"),
           ),
           child: isLoading == true
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(
-                      color: Colors
-                          .green //hexStringToColor("ffcc66").withOpacity(0.7),
-                      ),
+                    color: hexStringToColor("ffcc66").withOpacity(0.7),
+                  ),
                 )
               : SingleChildScrollView(
                   child: Padding(
@@ -261,26 +260,30 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                                     })),
                             const Padding(
                               padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                              child: Text.rich(TextSpan(children: [
-                                TextSpan(
-                                    text: "I agree to the ",
-                                    style: TextStyle(color: Colors.white)),
-                                TextSpan(
-                                    text: "Privacy Policy",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: Colors.white)),
-                                TextSpan(
-                                    text: " and ",
-                                    style: TextStyle(color: Colors.white)),
-                                TextSpan(
-                                    text: "Terms of Use",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: Colors.white)),
-                              ])),
+                              child: Text.rich(TextSpan(
+                                  style: TextStyle(fontSize: 13),
+                                  children: [
+                                    TextSpan(
+                                        text: "I agree to the ",
+                                        style: TextStyle(color: Colors.white)),
+                                    TextSpan(
+                                        text: "Privacy Policy",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor: Colors.white)),
+                                    TextSpan(
+                                        text: " and ",
+                                        style: TextStyle(color: Colors.white)),
+                                    TextSpan(
+                                        text: "Terms of Use",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor: Colors.white)),
+                                  ])),
                             ),
                           ],
                         ),

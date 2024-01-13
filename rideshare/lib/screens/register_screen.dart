@@ -82,7 +82,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                     // Phone Number box
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 70, 0, 0),
+                      padding: const EdgeInsets.fromLTRB(0, 50, 0, 0),
                       child: TextField(
                         // Type of controller
                         controller: _phoneNumberController,
@@ -172,7 +172,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                     // Or Sign Up With
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(5, 70, 5, 0),
+                      padding: const EdgeInsets.fromLTRB(5, 30, 5, 0),
                       child: Row(children: [
                         Expanded(
                           child: Divider(
@@ -198,7 +198,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                     // Bottom Provider Buttons
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
+                      padding: const EdgeInsets.fromLTRB(0, 50, 0, 0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

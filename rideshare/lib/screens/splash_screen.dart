@@ -63,8 +63,6 @@ class _SplashScreenState extends State<SplashScreen> {
             // Finding screen width and height
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
-
-            // Creating a gradient on the screen
             decoration: BoxDecoration(
               color: hexStringToColor("6c7373"),
             ),

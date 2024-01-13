@@ -36,11 +36,10 @@ class _OtpScreenState extends State<OtpScreen> {
             color: hexStringToColor("6c7373"),
           ),
           child: isLoading == true
-              ? const Center(
+              ? Center(
                   child: CircularProgressIndicator(
-                      color: Colors
-                          .white //hexStringToColor("ffcc66").withOpacity(0.7),
-                      ),
+                    color: hexStringToColor("ffcc66").withOpacity(0.7),
+                  ),
                 )
               : SingleChildScrollView(
                   child: Column(
