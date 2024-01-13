@@ -1,11 +1,8 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
-import 'package:email_validator/email_validator.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rideshare/model/user_model.dart';
 import 'package:rideshare/provider/auth_provider.dart';
-import 'package:rideshare/screens/home_screen.dart';
 import 'package:rideshare/utils/color_utils.dart';
 import 'package:rideshare/reusable_widgets/reusable_widget.dart';
 import 'dart:io';
@@ -21,33 +18,57 @@ class SignUpScreenOther extends StatefulWidget {
 
 class _SignUpScreenOtherState extends State<SignUpScreenOther> {
   File? image;
-  final TextEditingController _passwordTextController = TextEditingController();
+  final TextEditingController _imageController = TextEditingController();
   final TextEditingController _emailTextController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
 
   bool isPasswordVisible = true;
   bool isChecked = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    getEmailAndPicture();
+  }
+
+  void getEmailAndPicture() async {
+    final authProvider =
+        Provider.of<AuthenticationProvider>(context, listen: true);
+
+    authProvider.getUserDataFromFirebase().whenComplete(
+      () {
+        setState(() {
+          _emailTextController.text = authProvider.userModel.email;
+          _imageController.text = authProvider.userModel.profilePic;
+        });
+      },
+    );
+  }
+
+  @override
   void dispose() {
     super.dispose();
-    _passwordTextController.dispose();
     _emailTextController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
+    _phoneNumberController.dispose();
   }
 
   // Selecting Image
   void selectImage() async {
-    image = await pickImage(context);
-    setState(() {});
+    File? img = await pickImage(context);
+    setState(() {
+      image = img;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final isLoading =
         Provider.of<AuthenticationProvider>(context, listen: true).isLoading;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -59,22 +80,13 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
           height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
             color: hexStringToColor("6c7373"),
-            // gradient: LinearGradient(
-            //     colors: [
-            //   hexStringToColor("ffcc66"),
-            //   hexStringToColor("9e9476"),
-            //   hexStringToColor("343b3e"),
-            // ],
-
-            // Making the gradient go from top to bottom
-            // begin: Alignment.topCenter,
-            // end: Alignment.bottomCenter)),
           ),
           child: isLoading == true
-              ? Center(
+              ? const Center(
                   child: CircularProgressIndicator(
-                    color: hexStringToColor("ffcc66").withOpacity(0.7),
-                  ),
+                      color: Colors
+                          .green //hexStringToColor("ffcc66").withOpacity(0.7),
+                      ),
                 )
               : SingleChildScrollView(
                   child: Padding(
@@ -100,27 +112,15 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                           onTap: () => selectImage(),
                           child: image == null
                               ? CircleAvatar(
-                                  backgroundColor: hexStringToColor("ffcc66")
-                                      .withOpacity(0.7),
+                                  backgroundColor: Colors.transparent,
+                                  backgroundImage:
+                                      NetworkImage(_imageController.text),
                                   radius: 50,
-                                  child: const Icon(
-                                    Icons.person_outline,
-                                    color: Colors.white,
-                                    size: 50,
-                                  ),
                                 )
                               : CircleAvatar(
                                   backgroundImage: FileImage(image!),
                                   radius: 50,
                                 ),
-                        ),
-                      ),
-
-                      Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                        child: const Text(
-                          "Please add a Profile Picture",
-                          style: TextStyle(color: Colors.white, fontSize: 15),
                         ),
                       ),
 
@@ -130,15 +130,21 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                         child: Row(
                           children: <Widget>[
                             Expanded(
-                              child: reusableTextField("First Name",
-                                  Icons.person_outline, _firstNameController),
+                              child: reusableTextField(
+                                  "First Name",
+                                  Icons.person_outline,
+                                  _firstNameController,
+                                  false),
                             ),
                             const SizedBox(
                               width: 16.0,
                             ),
                             Expanded(
-                              child: reusableTextField("Last Name",
-                                  Icons.person_outline, _lastNameController),
+                              child: reusableTextField(
+                                  "Last Name",
+                                  Icons.person_outline,
+                                  _lastNameController,
+                                  false),
                             ),
                           ],
                         ),
@@ -147,66 +153,96 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                       // Email Box
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: reusableTextField("E-Mail", Icons.email_outlined,
-                            _emailTextController),
+                        child: reusableTextField(
+                            _emailTextController.text.trim(),
+                            Icons.email_outlined,
+                            _emailTextController,
+                            true),
                       ),
 
-                      // Password Box
+                      // Phone Number Box
                       Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                          child: TextField(
-                            // Type of controller
-                            controller: _passwordTextController,
+                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: TextField(
+                          // Type of controller
+                          controller: _phoneNumberController,
 
-                            // Configurations
-                            obscureText: isPasswordVisible,
-                            enableSuggestions: false,
-                            autocorrect: false,
-                            cursorColor: Colors.white,
-                            style:
-                                TextStyle(color: Colors.white.withOpacity(0.9)),
+                          // Configurations
+                          cursorColor: Colors.white,
 
-                            // Add decoration to text box
-                            decoration: InputDecoration(
-                              // Prefixed icon
-                              prefixIcon: const Icon(
-                                Icons.lock_outline,
-                                color: Colors.white70,
-                              ),
+                          onChanged: (value) {
+                            setState(() {
+                              _phoneNumberController.text = value;
+                            });
+                          },
+                          style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 18),
 
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  isPasswordVisible
-                                      ? Icons.visibility_off
-                                      : Icons.visibility,
-                                  color: Colors.white70,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    isPasswordVisible = !isPasswordVisible;
-                                  });
+                          // Add decoration to text box
+                          decoration: InputDecoration(
+                            // Prefixed icon
+                            prefixIcon: Container(
+                              padding: const EdgeInsets.fromLTRB(10, 11, 10, 0),
+                              child: InkWell(
+                                onTap: () {
+                                  showCountryPicker(
+                                      context: context,
+                                      countryListTheme:
+                                          const CountryListThemeData(
+                                              bottomSheetHeight: 500),
+                                      onSelect: (value) {
+                                        setState(() {
+                                          selectedCountry = value;
+                                        });
+                                      });
                                 },
+                                child: Text(
+                                  "${selectedCountry.flagEmoji} + ${selectedCountry.phoneCode}",
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white.withOpacity(0.9)),
+                                ),
                               ),
-
-                              // Test Styling
-                              labelText: "Password",
-                              labelStyle: TextStyle(
-                                  color: Colors.white.withOpacity(0.9)),
-                              filled: false,
-                              floatingLabelBehavior:
-                                  FloatingLabelBehavior.never,
-                              fillColor: Colors.white.withOpacity(0.3),
-
-                              // Border Styling
-                              enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15.0),
-                                  borderSide: const BorderSide(
-                                      color: Colors.white,
-                                      width: 2,
-                                      style: BorderStyle.solid)),
-                              border: const OutlineInputBorder(),
                             ),
-                          )),
+
+                            suffixIcon:
+                                _phoneNumberController.text.trim().length > 9
+                                    ? Container(
+                                        height: 30,
+                                        width: 30,
+                                        margin: const EdgeInsets.fromLTRB(
+                                            0, 0, 10, 0),
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Colors.green,
+                                        ),
+                                        child: const Icon(Icons.done,
+                                            color: Colors.white, size: 20),
+                                      )
+                                    : null,
+
+                            // Test Styling
+                            labelText: "Phone Number",
+                            labelStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.9)),
+                            filled: false,
+                            floatingLabelBehavior: FloatingLabelBehavior.never,
+                            fillColor: Colors.white.withOpacity(0.3),
+
+                            // Border Styling
+                            enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15.0),
+                                borderSide: const BorderSide(
+                                    color: Colors.white,
+                                    width: 2,
+                                    style: BorderStyle.solid)),
+                            border: const OutlineInputBorder(),
+                          ),
+
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
 
                       // Terms and Conditions
                       Padding(
@@ -255,41 +291,33 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                         padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                         child: firebaseUIButton(context, "Create Account", () {
                           if (isChecked) {
-                            final authProvider =
-                                Provider.of<AuthenticationProvider>(context,
-                                    listen: false);
-
-                            if (_firstNameController.text != "" &&
-                                _lastNameController.text != "" &&
-                                _emailTextController.text != "" &&
-                                _passwordTextController.text != "") {
-                              if (EmailValidator.validate(
-                                  _emailTextController.text)) {
-                                if (_passwordTextController.text.length >= 6) {
-                                  final AuthCredential authCredential =
-                                      EmailAuthProvider.credential(
-                                          email: _emailTextController.text,
-                                          password:
-                                              _passwordTextController.text);
-                                  authProvider.linkUserData(authCredential);
-                                  storeData();
-                                } else {
-                                  showSnackBar(
-                                      context,
-                                      "Oops!",
-                                      "Password length must be atleast 6 characters",
-                                      ContentType.help);
-                                }
-                              } else {
-                                showSnackBar(context, "Oops!", "Invalid Email",
-                                    ContentType.warning);
-                              }
-                            } else {
+                            // Check if any are empty
+                            if (_firstNameController.text == "" ||
+                                _lastNameController.text == "" ||
+                                _phoneNumberController.text == "") {
                               showSnackBar(
                                   context,
                                   "Oops!",
                                   "Please fill in all fields",
                                   ContentType.warning);
+                            }
+
+                            if (image != null) {
+                              linkPhoneNumberNewProfilePic(
+                                  context,
+                                  _firstNameController.text.trim(),
+                                  _lastNameController.text.trim(),
+                                  _emailTextController.text.trim(),
+                                  _phoneNumberController.text.trim(),
+                                  image);
+                            } else {
+                              linkPhoneNumber(
+                                  context,
+                                  _firstNameController.text.trim(),
+                                  _lastNameController.text.trim(),
+                                  _emailTextController.text.trim(),
+                                  _phoneNumberController.text.trim(),
+                                  _imageController.text.trim());
                             }
                           } else {
                             showSnackBar(
@@ -304,39 +332,5 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                   ),
                 ))),
     );
-  }
-
-  void storeData() async {
-    final authProvider =
-        Provider.of<AuthenticationProvider>(context, listen: false);
-    UserModel userModel = UserModel(
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: _emailTextController.text.trim(),
-        phoneNumber: "",
-        profilePic: "",
-        createdAt: "",
-        uid: "");
-    if (image != null) {
-      authProvider.saveUserDataToFirebase(
-        context: context,
-        userModel: userModel,
-        profilePic: image!,
-        onSuccess: () {
-          // Once Data is stored, store it locally.
-          authProvider.saveUserDataToSP().then(
-                (value) => authProvider.setSignIn().then((value) =>
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: ((context) => const HomeScreen())),
-                        (route) => false)),
-              );
-        },
-      );
-    } else {
-      showSnackBar(context, "Oops!", "Please Upload a Profile Picture",
-          ContentType.help);
-    }
   }
 }

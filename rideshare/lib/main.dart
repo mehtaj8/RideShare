@@ -1,7 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:rideshare/provider/auth_provider.dart';
 import 'package:rideshare/screens/splash_screen.dart';
@@ -35,11 +34,10 @@ class MyApp extends StatelessWidget {
         });
         return MaterialApp(
           theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                  seedColor: Color.fromARGB(255, 35, 29, 152)),
-              useMaterial3: true,
-              textTheme: GoogleFonts.latoTextTheme(
-                  Theme.of(context).textTheme.apply(fontFamily: 'Roboto'))),
+            colorScheme: ColorScheme.fromSeed(
+                seedColor: Color.fromARGB(255, 35, 29, 152)),
+            useMaterial3: true,
+          ),
           debugShowCheckedModeBanner: false,
           home: const SplashScreen(),
         );

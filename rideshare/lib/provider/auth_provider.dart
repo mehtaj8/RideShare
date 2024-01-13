@@ -6,7 +6,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:rideshare/model/user_model.dart';
+import 'package:rideshare/screens/home_screen.dart';
 import 'package:rideshare/screens/otp_screen.dart';
 import 'package:rideshare/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +19,8 @@ class AuthenticationProvider extends ChangeNotifier {
   bool get isSignedIn => _isSignedIn;
   bool _isLoading = false;
   bool get isLoading => _isLoading;
+  bool _allInfoCollected = false;
+  bool get allInfoCollected => _allInfoCollected;
 
   String? _uid;
   String get uid => _uid!;
@@ -29,14 +34,34 @@ class AuthenticationProvider extends ChangeNotifier {
 
   AuthenticationProvider() {
     checkSignIn();
+    checkAllInfoCollected();
   }
 
+  // Get Current User
+  Future<User?> getCurrentUser() async {
+    return await _firebaseAuth.currentUser;
+  }
+
+  // Get Instance
+  FirebaseAuth getInstance() {
+    return _firebaseAuth;
+  }
+
+  // Check Sign In
   void checkSignIn() async {
     final SharedPreferences s = await SharedPreferences.getInstance();
     _isSignedIn = s.getBool("is_signed_in") ?? false;
     notifyListeners();
   }
 
+  // Check All Info Collected
+  void checkAllInfoCollected() async {
+    final SharedPreferences s = await SharedPreferences.getInstance();
+    _allInfoCollected = s.getBool("all_info_collected") ?? false;
+    notifyListeners();
+  }
+
+  // Set Sign In to true if user signed in
   Future setSignIn() async {
     final SharedPreferences s = await SharedPreferences.getInstance();
     s.setBool("is_signed_in", true);
@@ -44,15 +69,114 @@ class AuthenticationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Set All Info Collected to true if all user info is collected
+  Future setAllInfoCollected() async {
+    final SharedPreferences s = await SharedPreferences.getInstance();
+    s.setBool("all_info_collected", true);
+    _allInfoCollected = true;
+    notifyListeners();
+  }
+
+  // Link User Data
   void linkUserData(AuthCredential credential) async {
     _firebaseAuth.currentUser?.linkWithCredential(credential);
   }
 
-  void signInWithPhone(BuildContext context, String phoneNumber) async {
+  // Sign Up with Google
+  void signUpWithGoogle(BuildContext context, Function onSuccess) async {
+    _isLoading = true;
+    notifyListeners();
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    final GoogleSignInAccount? googleSignInAccount =
+        await googleSignIn.signIn();
+
+    final GoogleSignInAuthentication? googleSignInAuthentication =
+        await googleSignInAccount?.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleSignInAuthentication?.idToken,
+        accessToken: googleSignInAuthentication?.accessToken);
+
+    UserCredential result =
+        await _firebaseAuth.signInWithCredential(credential);
+
+    User? userDetails = result.user;
+
+    if (userDetails != null) {
+      if (await checkIfUserExistsEmail(userDetails.email!)) {
+        await getUserDataFromFirebase().whenComplete(() {
+          setSignIn();
+          setAllInfoCollected();
+          Navigator.push(
+              context,
+              PageTransition(
+                  child: const HomeScreen(),
+                  type: PageTransitionType.fade,
+                  duration: const Duration(milliseconds: 300)));
+        });
+      } else {
+        _uid = userDetails.uid;
+
+        UserModel userModel = UserModel(
+            firstName: "",
+            lastName: "",
+            email: userDetails.email!,
+            phoneNumber: "",
+            profilePic: userDetails.photoURL!,
+            createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+            uid: userDetails.uid);
+
+        _userModel = userModel;
+        try {
+          await _firebaseFirestore
+              .collection("users")
+              .doc(_uid)
+              .set(userModel.toMap())
+              .whenComplete(() {
+            onSuccess();
+            _isLoading = false;
+            notifyListeners();
+          });
+        } on FirebaseAuthException catch (e) {
+          showSnackBar(
+              context, "Error", e.message.toString(), ContentType.failure);
+        }
+      }
+    }
+  }
+
+  // Sign Up with Phone
+  void signUpWithPhone(BuildContext context, String phoneNumber) async {
     await _firebaseAuth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential phoneAuthCredential) async {
           await _firebaseAuth.signInWithCredential(phoneAuthCredential);
+        },
+        verificationFailed: (error) {
+          if (error.code == "invalid-phone-number") {
+            showSnackBar(context, "Error",
+                "The Provided Phone Number is not Valid.", ContentType.failure);
+          }
+        },
+        codeSent: (verificationId, forceResendingToken) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    OtpScreen(verificationId: verificationId)),
+          );
+        },
+        codeAutoRetrievalTimeout: (verificationId) {});
+  }
+
+  // Link Phone Number
+  void linkPhone(BuildContext context, String phoneNumber) async {
+    await _firebaseAuth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential phoneAuthCredential) async {
+          notifyListeners();
+          await _firebaseAuth.currentUser
+              ?.linkWithCredential(phoneAuthCredential);
         },
         verificationFailed: (error) {
           if (error.code == "invalid-phone-number") {
@@ -71,7 +195,42 @@ class AuthenticationProvider extends ChangeNotifier {
         codeAutoRetrievalTimeout: (verificationId) {});
   }
 
-  void verifyOtp({
+  // Verify OTP and Link User
+  void verifyOtpLink({
+    required BuildContext context,
+    required String verificationId,
+    required String userOtp,
+    required Function onSuccess,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      PhoneAuthCredential creds = PhoneAuthProvider.credential(
+          verificationId: verificationId, smsCode: userOtp);
+
+      // User
+      await _firebaseAuth.currentUser?.linkWithCredential(creds);
+      User? user = _firebaseAuth.currentUser;
+
+      if (user != null) {
+        onSuccess();
+        _isLoading = false;
+        notifyListeners();
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == "invalid-verification-code") {
+        showSnackBar(
+            context,
+            "Error!",
+            "OTP is invalid. Please enter correct password",
+            ContentType.failure);
+      }
+    }
+  }
+
+  // Verify OTP and sign in
+  void verifyOtpSignIn({
     required BuildContext context,
     required String verificationId,
     required String userOtp,
@@ -89,11 +248,10 @@ class AuthenticationProvider extends ChangeNotifier {
 
       if (user != null) {
         _uid = user.uid;
+        _isLoading = false;
+        notifyListeners();
         onSuccess();
       }
-
-      _isLoading = false;
-      notifyListeners();
     } on FirebaseAuthException catch (e) {
       if (e.code == "invalid-verification-code") {
         showSnackBar(
@@ -102,28 +260,49 @@ class AuthenticationProvider extends ChangeNotifier {
             "OTP is invalid. Please enter correct password",
             ContentType.failure);
       }
-      _isLoading = false;
-      notifyListeners();
     }
   }
 
+  // User Sign Out
+  Future userSignOut() async {
+    SharedPreferences s = await SharedPreferences.getInstance();
+    await _firebaseAuth.signOut();
+    _isSignedIn = false;
+    _allInfoCollected = false;
+    notifyListeners();
+    s.clear();
+  }
+
   // DATABASE OPERATIONS
+
+  // Check if user exists
   Future<bool> checkExistingUser() async {
     DocumentSnapshot snapshot =
         await _firebaseFirestore.collection("users").doc(_uid).get();
     if (snapshot.exists) {
-      print("USER EXISTS");
       return true;
     } else {
-      print("NEW USER");
       return false;
     }
   }
 
+  // Check if user exists using email
   Future<bool> checkIfUserExistsEmail(String email) async {
     QuerySnapshot query = await _firebaseFirestore
         .collection("users")
         .where('email', isEqualTo: email)
+        .get();
+    if (query.docs.length == 0) {
+      return false;
+    }
+    return true;
+  }
+
+  // Check if user exists using phone number
+  Future<bool> checkIfUserExistsPhone(String phoneNumber) async {
+    QuerySnapshot query = await _firebaseFirestore
+        .collection("users")
+        .where('phoneNumber', isEqualTo: phoneNumber)
         .get();
     if (query.docs.length == 0) {
       return false;
@@ -132,22 +311,25 @@ class AuthenticationProvider extends ChangeNotifier {
     }
   }
 
-  void saveUserDataToFirebase({
+  // Save Data to firebase for other providers (Google, Apple, Facebook)
+  void saveUserDataToFirebaseOther({
     required BuildContext context,
     required UserModel userModel,
-    required File profilePic,
+    required String firstName,
+    required String lastName,
+    required String phoneNumber,
     required Function onSuccess,
   }) async {
     _isLoading = true;
     notifyListeners();
     try {
       // Uploading image to firebase storage
-      await storeFileToStorage("profilePic/$_uid", profilePic).then((value) {
-        userModel.profilePic = value;
-        userModel.createdAt = DateTime.now().millisecondsSinceEpoch.toString();
-        userModel.phoneNumber = _firebaseAuth.currentUser!.phoneNumber!;
-        userModel.uid = _firebaseAuth.currentUser!.uid;
-      });
+
+      userModel.firstName = firstName;
+      userModel.lastName = lastName;
+      userModel.createdAt = DateTime.now().millisecondsSinceEpoch.toString();
+      userModel.phoneNumber = phoneNumber;
+
       _userModel = userModel;
 
       // Uploading to Database
@@ -165,6 +347,82 @@ class AuthenticationProvider extends ChangeNotifier {
     }
   }
 
+  // User uploaded new Profile Pic
+  void saveUserDataToFirebaseOtherNewProfilePic({
+    required BuildContext context,
+    required UserModel userModel,
+    required String firstName,
+    required String lastName,
+    required String phoneNumber,
+    required String profilePic,
+    required Function onSuccess,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      // Uploading image to firebase storage
+      userModel.profilePic = profilePic;
+      userModel.firstName = firstName;
+      userModel.lastName = lastName;
+      userModel.createdAt = DateTime.now().millisecondsSinceEpoch.toString();
+      userModel.phoneNumber = phoneNumber;
+
+      _userModel = userModel;
+
+      // Uploading to Database
+      await _firebaseFirestore
+          .collection("users")
+          .doc(_uid)
+          .update(userModel.toMap())
+          .then((value) {
+        onSuccess();
+        _isLoading = false;
+        notifyListeners();
+      });
+    } on FirebaseAuthException catch (e) {
+      showSnackBar(context, "Error", e.message.toString(), ContentType.failure);
+    }
+  }
+
+  // Save Data to firebase if sign up with phone
+  void saveUserDataToFirebase({
+    required BuildContext context,
+    required UserModel userModel,
+    required File profilePic,
+    required Function onSuccess,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      // Uploading image to firebase storage
+      await getUserDataFromFirebase().then((value) async {
+        await storeFileToStorage("profilePic/$_uid", profilePic).then((value) {
+          userModel.profilePic = value;
+          userModel.createdAt =
+              DateTime.now().millisecondsSinceEpoch.toString();
+          userModel.phoneNumber = _firebaseAuth.currentUser!.phoneNumber!;
+          userModel.uid = _firebaseAuth.currentUser!.uid;
+        });
+
+        _userModel = userModel;
+
+        // Uploading to Database
+        await _firebaseFirestore
+            .collection("users")
+            .doc(_uid)
+            .set(userModel.toMap())
+            .then((value) {
+          _isLoading = false;
+          notifyListeners();
+          onSuccess();
+        });
+      });
+    } on FirebaseAuthException catch (e) {
+      showSnackBar(context, "Error", e.message.toString(), ContentType.failure);
+    }
+  }
+
+  // Store profile pic
   Future<String> storeFileToStorage(String ref, File file) async {
     UploadTask uploadTask = _firebaseStorage.ref().child(ref).putFile(file);
     TaskSnapshot snapshot = await uploadTask;
@@ -172,9 +430,10 @@ class AuthenticationProvider extends ChangeNotifier {
     return downloadUrl;
   }
 
+  // Get Current User Data
   Future getUserDataFromFirebase() async {
     if (FirebaseAuth.instance.currentUser != null) {
-      return FirebaseFirestore.instance
+      return _firebaseFirestore
           .collection('users')
           .doc(await FirebaseAuth.instance.currentUser!.uid)
           .get()
@@ -185,24 +444,19 @@ class AuthenticationProvider extends ChangeNotifier {
   }
 
   // STORING DATA LOCALLY
+
+  // Save Data to Shared Preferences
   Future saveUserDataToSP() async {
     SharedPreferences s = await SharedPreferences.getInstance();
     await s.setString("user_model", jsonEncode(userModel.toMap()));
   }
 
+  // Get Data from Shared Preferences
   Future getDataFromSP() async {
     SharedPreferences s = await SharedPreferences.getInstance();
     String data = s.getString("user_model") ?? '';
     _userModel = UserModel.fromMap(jsonDecode(data));
     _uid = _userModel!.uid;
     notifyListeners();
-  }
-
-  Future userSignOut() async {
-    SharedPreferences s = await SharedPreferences.getInstance();
-    await _firebaseAuth.signOut();
-    _isSignedIn = false;
-    notifyListeners();
-    s.clear();
   }
 }

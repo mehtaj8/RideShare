@@ -38,7 +38,6 @@ dependencies:
   firebase_core: ^2.24.2
   firebase_auth: ^4.16.0
   simple_animations: ^5.0.2
-  google_fonts: ^6.1.0
   page_transition: ^2.1.0
   get_storage: ^2.1.1
   flutter_shake_animated: ^0.0.5

@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:rideshare/provider/auth_provider.dart';
 import 'package:rideshare/screens/home_screen.dart';
 import 'package:rideshare/screens/landing_screen.dart';
+import 'package:rideshare/screens/register_screen.dart';
 import 'package:rideshare/utils/color_utils.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -28,12 +29,22 @@ class _SplashScreenState extends State<SplashScreen> {
         Provider.of<AuthenticationProvider>(context, listen: false);
     authProvider.getUserDataFromFirebase().whenComplete(() {
       if (authProvider.isSignedIn == true) {
-        Navigator.push(
-            context,
-            PageTransition(
-                child: const HomeScreen(),
-                type: PageTransitionType.fade,
-                duration: const Duration(milliseconds: 300)));
+        if (authProvider.allInfoCollected == true) {
+          Navigator.push(
+              context,
+              PageTransition(
+                  child: const HomeScreen(),
+                  type: PageTransitionType.fade,
+                  duration: const Duration(milliseconds: 300)));
+        } else {
+          authProvider.userSignOut();
+          Navigator.pushReplacement(
+              context,
+              PageTransition(
+                  child: const RegistrationScreen(),
+                  type: PageTransitionType.fade,
+                  duration: const Duration(milliseconds: 300)));
+        }
       } else {
         Navigator.push(
             context,
@@ -56,16 +67,6 @@ class _SplashScreenState extends State<SplashScreen> {
             // Creating a gradient on the screen
             decoration: BoxDecoration(
               color: hexStringToColor("6c7373"),
-              // gradient: LinearGradient(
-              //     colors: [
-              //   hexStringToColor("ffcc66"),
-              //   hexStringToColor("9e9476"),
-              //   hexStringToColor("343b3e"),
-              // ],
-
-              // Making the gradient go from top to bottom
-              // begin: Alignment.topCenter,
-              // end: Alignment.bottomCenter)),
             ),
             child: Container(
               alignment: Alignment.topCenter,

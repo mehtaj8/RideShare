@@ -66,12 +66,6 @@ class _SignInScreenState extends State<SignInScreen> {
               // The children in this Scroll View
               children: <Widget>[
                 // Logo
-                // Container(
-                //   padding: EdgeInsets.fromLTRB(50, 100, 0, 0),
-                //   alignment: Alignment.topLeft,
-                //   child: logoWidget("assets/images/car.png"),
-                // ),
-
                 Container(
                   alignment: Alignment.topLeft,
                   child: Padding(
@@ -90,6 +84,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
 
+                // Welcome Text
                 Container(
                   alignment: Alignment.topLeft,
                   child: Padding(
@@ -107,6 +102,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
 
+                // Slogan Text
                 Container(
                   alignment: Alignment.topLeft,
                   child: Padding(
@@ -129,8 +125,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
                   child: FadeAnimation(
                     1.6,
-                    reusableTextField(
-                        "E-Mail", Icons.email_outlined, _emailTextController),
+                    reusableTextField("E-Mail", Icons.email_outlined,
+                        _emailTextController, false),
                   ),
                 ),
 
@@ -205,8 +201,8 @@ class _SignInScreenState extends State<SignInScreen> {
                               email: _emailTextController.text,
                               password: _passwordTextController.text)
                           .then((value) {
-                        print("User Logged In ${_emailTextController.text}");
                         authProvider.setSignIn();
+                        authProvider.setAllInfoCollected();
                         authProvider.getUserDataFromFirebase().whenComplete(
                             () => Navigator.push(
                                 context,
@@ -215,23 +211,33 @@ class _SignInScreenState extends State<SignInScreen> {
                                     type: PageTransitionType.fade,
                                     duration:
                                         const Duration(milliseconds: 300))));
-                      }).catchError((onError) {
-                        print(onError.code);
+                      }).catchError((onError) async {
                         if (onError.code == 'invalid-email') {
                           showSnackBar(context, "Oops!", "Invalid E-Mail",
                               ContentType.warning);
                         }
                         if (onError.code == 'INVALID_LOGIN_CREDENTIALS') {
-                          showSnackBar(
-                              context,
-                              "Hmm...",
-                              "Incorrect E-Mail or Password",
-                              ContentType.warning);
+                          if (await authProvider.checkIfUserExistsEmail(
+                              _emailTextController.text)) {
+                            showSnackBar(
+                                context,
+                                "Oops!",
+                                "Looks like you used another provider to sign up! Please use the same provider to login!",
+                                ContentType.help);
+                          } else {
+                            showSnackBar(
+                                context,
+                                "Hmm...",
+                                "Incorrect E-Mail or Password",
+                                ContentType.warning);
+                          }
                         }
                       });
                     }),
                   ),
                 ),
+
+                // Or Sign In With
                 FadeAnimation(2.1, signUpOption()),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(5, 40, 5, 0),
@@ -262,6 +268,71 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                   ),
                 ),
+
+                // Bottom Provider Buttons
+                FadeAnimation(
+                  2.4,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            authProvider.signUpWithGoogle(context, () {
+                              authProvider.saveUserDataToSP().then(
+                                  (value) => authProvider.setSignIn().then(
+                                        (value) => authProvider
+                                            .setAllInfoCollected()
+                                            .then((value) =>
+                                                Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: ((context) =>
+                                                          const HomeScreen())),
+                                                )),
+                                      ));
+                            });
+                          },
+                          child: Image.asset(
+                            "assets/images/google.png",
+                            height: 45,
+                            width: 45,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(70, 0, 0, 0),
+                          child: GestureDetector(
+                            onTap: () {
+                              // authProvider.signInWithGoogle(context);
+                            },
+                            child: Image.asset(
+                              "assets/images/apple.png",
+                              height: 45,
+                              width: 45,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(70, 0, 0, 0),
+                          child: GestureDetector(
+                            onTap: () {
+                              // authProvider.signInWithGoogle(context);
+                            },
+                            child: Image.asset(
+                              "assets/images/facebook.png",
+                              height: 45,
+                              width: 45,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -278,8 +349,10 @@ class _SignInScreenState extends State<SignInScreen> {
             style: TextStyle(color: Colors.white70)),
         GestureDetector(
           onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const Registration()));
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const RegistrationScreen()));
           },
           child: Text(
             " Sign Up",

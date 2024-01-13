@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:rideshare/utils/color_utils.dart';
 
+// Logo
 Stack logoWidget(BuildContext context) {
-  // return Image.asset(
-  //   imageName,
-  //   fit: BoxFit.cover,
-  //   width: 80,
-  //   height: 80,
-  //   color: Colors.white,
-  // );
   return Stack(
       alignment: Alignment.center,
       fit: StackFit.loose,
@@ -38,8 +32,9 @@ Stack logoWidget(BuildContext context) {
       ]);
 }
 
-TextField reusableTextField(
-    String text, IconData icon, TextEditingController controller) {
+// Text Field
+TextField reusableTextField(String text, IconData icon,
+    TextEditingController controller, bool readOnly) {
   return TextField(
     // Type of controller
     controller: controller,
@@ -47,6 +42,7 @@ TextField reusableTextField(
     // Configurations
     cursorColor: Colors.white,
     style: TextStyle(color: Colors.white.withOpacity(0.9)),
+    readOnly: readOnly,
 
     // Add decoration to text box
     decoration: InputDecoration(
@@ -73,6 +69,7 @@ TextField reusableTextField(
   );
 }
 
+// UI Button
 Container firebaseUIButton(BuildContext context, String title, Function onTap) {
   return Container(
     width: MediaQuery.of(context).size.width,
@@ -108,4 +105,19 @@ Container firebaseUIButton(BuildContext context, String title, Function onTap) {
       ),
     ),
   );
+}
+
+// Google Button
+Row GoogleButton(BuildContext context, String title, Function onTap) {
+  return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+    GestureDetector(
+      onTap: () => onTap,
+      child: Image.asset(
+        "assets/images/google.png",
+        height: 45,
+        width: 45,
+        fit: BoxFit.cover,
+      ),
+    )
+  ]);
 }
