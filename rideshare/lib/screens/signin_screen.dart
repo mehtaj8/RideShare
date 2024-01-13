@@ -273,7 +273,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 FadeAnimation(
                   2.4,
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 50, 0, 0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

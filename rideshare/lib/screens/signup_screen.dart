@@ -61,9 +61,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: isLoading == true
               ? Center(
                   child: CircularProgressIndicator(
-                      color: Colors
-                          .orange //hexStringToColor("ffcc66").withOpacity(0.7),
-                      ),
+                    color: hexStringToColor("ffcc66").withOpacity(0.7),
+                  ),
                 )
               : SingleChildScrollView(
                   child: Padding(
@@ -221,26 +220,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     })),
                             const Padding(
                               padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                              child: Text.rich(TextSpan(children: [
-                                TextSpan(
-                                    text: "I agree to the ",
-                                    style: TextStyle(color: Colors.white)),
-                                TextSpan(
-                                    text: "Privacy Policy",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: Colors.white)),
-                                TextSpan(
-                                    text: " and ",
-                                    style: TextStyle(color: Colors.white)),
-                                TextSpan(
-                                    text: "Terms of Use",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        decoration: TextDecoration.underline,
-                                        decorationColor: Colors.white)),
-                              ])),
+                              child: Text.rich(TextSpan(
+                                  style: TextStyle(fontSize: 13),
+                                  children: [
+                                    TextSpan(
+                                        text: "I agree to the ",
+                                        style: TextStyle(color: Colors.white)),
+                                    TextSpan(
+                                        text: "Privacy Policy",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor: Colors.white)),
+                                    TextSpan(
+                                        text: " and ",
+                                        style: TextStyle(color: Colors.white)),
+                                    TextSpan(
+                                        text: "Terms of Use",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            decorationColor: Colors.white)),
+                                  ])),
                             ),
                           ],
                         ),
