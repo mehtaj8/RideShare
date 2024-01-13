@@ -22,6 +22,7 @@ class _OtpScreenState extends State<OtpScreen> {
   Widget build(BuildContext context) {
     final isLoading =
         Provider.of<AuthenticationProvider>(context, listen: true).isLoading;
+
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -33,22 +34,13 @@ class _OtpScreenState extends State<OtpScreen> {
           height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
             color: hexStringToColor("6c7373"),
-            // gradient: LinearGradient(
-            //     colors: [
-            //   hexStringToColor("ffcc66"),
-            //   hexStringToColor("9e9476"),
-            //   hexStringToColor("343b3e"),
-            // ],
-
-            // Making the gradient go from top to bottom
-            // begin: Alignment.topCenter,
-            // end: Alignment.bottomCenter)),
           ),
           child: isLoading == true
-              ? Center(
+              ? const Center(
                   child: CircularProgressIndicator(
-                    color: hexStringToColor("ffcc66").withOpacity(0.7),
-                  ),
+                      color: Colors
+                          .white //hexStringToColor("ffcc66").withOpacity(0.7),
+                      ),
                 )
               : SingleChildScrollView(
                   child: Column(
@@ -79,6 +71,8 @@ class _OtpScreenState extends State<OtpScreen> {
                           textAlign: TextAlign.center,
                         ),
                       ),
+
+                      // Enter OTP
                       const Padding(
                         padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
                         child: Text(
@@ -127,35 +121,76 @@ class _OtpScreenState extends State<OtpScreen> {
   void verifyOtp(BuildContext context, String userOtp) {
     final authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
-    authProvider.verifyOtp(
-        context: context,
-        verificationId: widget.verificationId,
-        userOtp: userOtp,
-        onSuccess: () {
-          // Check if user exists
-          authProvider.checkExistingUser().then(
-            (value) async {
-              if (value == true) {
-                final authProvider =
-                    Provider.of<AuthenticationProvider>(context, listen: false);
+    if (authProvider.isSignedIn == true) {
+      // If user is signing up with other provider
+      authProvider.verifyOtpLink(
+          context: context,
+          verificationId: widget.verificationId,
+          userOtp: userOtp,
+          onSuccess: () {
+            // Check if user exists
+            authProvider.checkExistingUser().then(
+              (value) async {
+                if (value == true) {
+                  final authProvider = Provider.of<AuthenticationProvider>(
+                      context,
+                      listen: false);
 
-                authProvider.setSignIn();
-                authProvider.getUserDataFromFirebase().whenComplete(() =>
-                    Navigator.push(
+                  authProvider.setSignIn();
+                  authProvider.setAllInfoCollected();
+                  authProvider.getUserDataFromFirebase().whenComplete(() {
+                    Navigator.pushReplacement(
                         context,
                         PageTransition(
                             child: const HomeScreen(),
                             type: PageTransitionType.fade,
-                            duration: const Duration(milliseconds: 300))));
-              } else {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const SignUpScreen()),
-                    (route) => false);
-              }
-            },
-          );
-        });
+                            duration: const Duration(milliseconds: 300)));
+                  });
+                } else {
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SignUpScreen()),
+                      (route) => false);
+                }
+              },
+            );
+          });
+    } else {
+      // If user is siging up with phone number
+      authProvider.verifyOtpSignIn(
+          context: context,
+          verificationId: widget.verificationId,
+          userOtp: userOtp,
+          onSuccess: () {
+            // Check if current user exists
+            authProvider.checkExistingUser().then(
+              (value) async {
+                if (value == true) {
+                  final authProvider = Provider.of<AuthenticationProvider>(
+                      context,
+                      listen: false);
+
+                  authProvider.setSignIn();
+                  authProvider.setAllInfoCollected();
+                  authProvider.getUserDataFromFirebase().whenComplete(() {
+                    Navigator.pushReplacement(
+                        context,
+                        PageTransition(
+                            child: const HomeScreen(),
+                            type: PageTransitionType.fade,
+                            duration: const Duration(milliseconds: 300)));
+                  });
+                } else {
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SignUpScreen()),
+                      (route) => false);
+                }
+              },
+            );
+          });
+    }
   }
 }

@@ -5,15 +5,16 @@ import 'package:rideshare/screens/singup_screen_other.dart';
 import 'package:rideshare/utils/color_utils.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:rideshare/provider/auth_provider.dart';
+import 'package:rideshare/utils/utils.dart';
 
-class Registration extends StatefulWidget {
-  const Registration({super.key});
+class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
 
   @override
-  State<Registration> createState() => _RegistrationState();
+  State<RegistrationScreen> createState() => _RegistrationScreenState();
 }
 
-class _RegistrationState extends State<Registration> {
+class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController _phoneNumberController = TextEditingController();
 
   @override
@@ -37,16 +38,6 @@ class _RegistrationState extends State<Registration> {
             height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
               color: hexStringToColor("6c7373"),
-              // gradient: LinearGradient(
-              //     colors: [
-              //   hexStringToColor("ffcc66"),
-              //   hexStringToColor("9e9476"),
-              //   hexStringToColor("343b3e"),
-              // ],
-
-              // Making the gradient go from top to bottom
-              // begin: Alignment.topCenter,
-              // end: Alignment.bottomCenter)),
             ),
             child: SingleChildScrollView(
               child: Padding(
@@ -75,6 +66,8 @@ class _RegistrationState extends State<Registration> {
                         textAlign: TextAlign.center,
                       ),
                     ),
+
+                    // Add Phone Number Text
                     const Padding(
                       padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
                       child: Text(
@@ -169,12 +162,15 @@ class _RegistrationState extends State<Registration> {
                       ),
                     ),
 
+                    // Register
                     Padding(
                       padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                       child: firebaseUIButton(context, "Register", () {
                         sendPhoneNumber(context, _phoneNumberController.text);
                       }),
                     ),
+
+                    // Or Sign Up With
                     Padding(
                       padding: const EdgeInsets.fromLTRB(5, 70, 5, 0),
                       child: Row(children: [
@@ -199,6 +195,8 @@ class _RegistrationState extends State<Registration> {
                         ),
                       ]),
                     ),
+
+                    // Bottom Provider Buttons
                     Padding(
                       padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
                       child: Row(
@@ -206,7 +204,7 @@ class _RegistrationState extends State<Registration> {
                         children: [
                           GestureDetector(
                             onTap: () {
-                              authProvider.signInWithGoogle(context, () {
+                              authProvider.signUpWithGoogle(context, () {
                                 authProvider.saveUserDataToSP().then(
                                       (value) => authProvider.setSignIn().then(
                                           (value) => Navigator.pushAndRemoveUntil(

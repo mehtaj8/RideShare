@@ -1,11 +1,7 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
-import 'package:email_validator/email_validator.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rideshare/model/user_model.dart';
 import 'package:rideshare/provider/auth_provider.dart';
-import 'package:rideshare/screens/home_screen.dart';
 import 'package:rideshare/utils/color_utils.dart';
 import 'package:rideshare/reusable_widgets/reusable_widget.dart';
 import 'dart:io';
@@ -40,8 +36,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   // Selecting Image
   void selectImage() async {
-    image = await pickImage(context);
-    setState(() {});
+    File? img = await pickImage(context);
+    setState(() {
+      image = img;
+    });
   }
 
   @override
@@ -59,22 +57,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
           height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
             color: hexStringToColor("6c7373"),
-            // gradient: LinearGradient(
-            //     colors: [
-            //   hexStringToColor("ffcc66"),
-            //   hexStringToColor("9e9476"),
-            //   hexStringToColor("343b3e"),
-            // ],
-
-            // Making the gradient go from top to bottom
-            // begin: Alignment.topCenter,
-            // end: Alignment.bottomCenter)),
           ),
           child: isLoading == true
               ? Center(
                   child: CircularProgressIndicator(
-                    color: hexStringToColor("ffcc66").withOpacity(0.7),
-                  ),
+                      color: Colors
+                          .orange //hexStringToColor("ffcc66").withOpacity(0.7),
+                      ),
                 )
               : SingleChildScrollView(
                   child: Padding(
@@ -116,6 +105,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ),
 
+                      // Add Profile Pic Text
                       Container(
                         margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                         child: const Text(
@@ -261,34 +251,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                         child: firebaseUIButton(context, "Create Account", () {
                           if (isChecked) {
-                            final authProvider =
-                                Provider.of<AuthenticationProvider>(context,
-                                    listen: false);
-
                             if (_firstNameController.text != "" &&
                                 _lastNameController.text != "" &&
                                 _emailTextController.text != "" &&
                                 _passwordTextController.text != "") {
-                              if (EmailValidator.validate(
-                                  _emailTextController.text)) {
-                                if (_passwordTextController.text.length >= 6) {
-                                  final AuthCredential authCredential =
-                                      EmailAuthProvider.credential(
-                                          email: _emailTextController.text,
-                                          password:
-                                              _passwordTextController.text);
-                                  authProvider.linkUserData(authCredential);
-                                  storeData();
-                                } else {
-                                  showSnackBar(
-                                      context,
-                                      "Oops!",
-                                      "Password length must be atleast 6 characters",
-                                      ContentType.help);
-                                }
+                              if (image == null) {
+                                showSnackBar(
+                                    context,
+                                    "Oops!",
+                                    "Please add a Profile Picture",
+                                    ContentType.help);
                               } else {
-                                showSnackBar(context, "Oops!", "Invalid Email",
-                                    ContentType.warning);
+                                linkEmail(
+                                    context,
+                                    _firstNameController.text,
+                                    _lastNameController.text,
+                                    _emailTextController.text,
+                                    _passwordTextController.text,
+                                    image!);
                               }
                             } else {
                               showSnackBar(
@@ -310,39 +290,5 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ))),
     );
-  }
-
-  void storeData() async {
-    final authProvider =
-        Provider.of<AuthenticationProvider>(context, listen: false);
-    UserModel userModel = UserModel(
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: _emailTextController.text.trim(),
-        phoneNumber: "",
-        profilePic: "",
-        createdAt: "",
-        uid: "");
-    if (image != null) {
-      authProvider.saveUserDataToFirebase(
-        context: context,
-        userModel: userModel,
-        profilePic: image!,
-        onSuccess: () {
-          // Once Data is stored, store it locally.
-          authProvider.saveUserDataToSP().then(
-                (value) => authProvider.setSignIn().then((value) =>
-                    Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                            builder: ((context) => const HomeScreen())),
-                        (route) => false)),
-              );
-        },
-      );
-    } else {
-      showSnackBar(context, "Oops!", "Please Upload a Profile Picture",
-          ContentType.help);
-    }
   }
 }

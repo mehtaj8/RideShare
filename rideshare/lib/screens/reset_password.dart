@@ -37,7 +37,6 @@ class _ResetPasswordState extends State<ResetPassword> {
           .sendPasswordResetEmail(email: _emailTextController.text.trim())
           .then((value) => Navigator.of(context).pop())
           .catchError((onError) {
-        print(onError.code);
         if (onError.code == 'missing-email') {
           showSnackBar(
               context, "Hmm...", "Please Enter an E-Mail", ContentType.help);
@@ -63,22 +62,13 @@ class _ResetPasswordState extends State<ResetPassword> {
           height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
             color: hexStringToColor("6c7373"),
-            // gradient: LinearGradient(
-            //     colors: [
-            //   hexStringToColor("ffcc66"),
-            //   hexStringToColor("9e9476"),
-            //   hexStringToColor("343b3e"),
-            // ],
-
-            // Making the gradient go from top to bottom
-            // begin: Alignment.topCenter,
-            // end: Alignment.bottomCenter)),
           ),
           child: SingleChildScrollView(
               child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 120, 20, 0),
             child: Column(
               children: <Widget>[
+                // Top Logo
                 Container(
                   height: 100,
                   width: 100,
@@ -88,6 +78,8 @@ class _ResetPasswordState extends State<ResetPassword> {
                     color: hexStringToColor("ffcc66").withOpacity(0.7),
                   ),
                 ),
+
+                // Enter E-Mail Text
                 const Padding(
                   padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
                   child: Text(
@@ -99,11 +91,15 @@ class _ResetPasswordState extends State<ResetPassword> {
                     textAlign: TextAlign.center,
                   ),
                 ),
+
+                // E-Mail Text Field
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
                   child: reusableTextField("E-Mail", Icons.person_outline,
                       _emailTextController, false),
                 ),
+
+                // Reset Password Button
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                   child: firebaseUIButton(

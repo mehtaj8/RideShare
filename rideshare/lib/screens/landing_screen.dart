@@ -136,7 +136,7 @@ class _LandingScreenState extends State<LandingScreen>
               ),
             ),
 
-            // Logo + Bottom Button
+            // Logo + Slogan + Bottom Button
             Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,6 +154,8 @@ class _LandingScreenState extends State<LandingScreen>
                           ],
                         )),
                   ),
+
+                  // Slogan
                   Container(
                     alignment: Alignment.bottomCenter,
                     margin: EdgeInsets.fromLTRB(0, 0, 0, 150),
@@ -168,77 +170,75 @@ class _LandingScreenState extends State<LandingScreen>
                           textAlign: TextAlign.center,
                         )),
                   ),
-                  const SizedBox(
-                    height: 50,
-                  ),
 
                   // Bottom Button
-                  FadeAnimation(
-                      2.4,
-                      AnimatedBuilder(
-                        animation: _scaleController,
-                        builder: (context, child) => Transform.scale(
-                            scale: _scaleAnimation.value,
-                            child: Center(
-                              child: AnimatedBuilder(
-                                animation: _widthController,
-                                builder: (context, child) => Container(
-                                  width: _widthAnimation.value,
-                                  height: 80,
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(50),
-                                      color: hexStringToColor("ffcc66")
-                                          .withOpacity(0.4)),
-                                  child: InkWell(
-                                    onTap: () {
-                                      _scaleController.forward();
-                                    },
-                                    child: Stack(
-                                      children: <Widget>[
-                                        AnimatedBuilder(
-                                          animation: _positionAnimation,
-                                          builder: (context, child) =>
-                                              Positioned(
-                                            left: _positionAnimation.value,
-                                            child: AnimatedBuilder(
-                                              animation: _scale2Controller,
-                                              builder: (context, child) =>
-                                                  Transform.scale(
-                                                      scale: _scale2Animation
-                                                          .value,
-                                                      child: Container(
-                                                        width: 60,
-                                                        height: 60,
-                                                        decoration: BoxDecoration(
-                                                            shape:
-                                                                BoxShape.circle,
-                                                            color:
-                                                                hexStringToColor(
-                                                                    "ffcc66")),
-                                                        child: hideIcon == false
-                                                            ? Icon(
-                                                                Icons
-                                                                    .arrow_forward_ios,
-                                                                color: Colors
-                                                                    .black
-                                                                    .withOpacity(
-                                                                        0.7),
-                                                              )
-                                                            : Container(),
-                                                      )),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
+                    child: FadeAnimation(
+                        2.4,
+                        AnimatedBuilder(
+                          animation: _scaleController,
+                          builder: (context, child) => Transform.scale(
+                              scale: _scaleAnimation.value,
+                              child: Center(
+                                child: AnimatedBuilder(
+                                  animation: _widthController,
+                                  builder: (context, child) => Container(
+                                    width: _widthAnimation.value,
+                                    height: 80,
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(50),
+                                        color: hexStringToColor("ffcc66")
+                                            .withOpacity(0.4)),
+                                    child: InkWell(
+                                      onTap: () {
+                                        _scaleController.forward();
+                                      },
+                                      child: Stack(
+                                        children: <Widget>[
+                                          AnimatedBuilder(
+                                            animation: _positionAnimation,
+                                            builder: (context, child) =>
+                                                Positioned(
+                                              left: _positionAnimation.value,
+                                              child: AnimatedBuilder(
+                                                animation: _scale2Controller,
+                                                builder: (context, child) =>
+                                                    Transform.scale(
+                                                        scale: _scale2Animation
+                                                            .value,
+                                                        child: Container(
+                                                          width: 60,
+                                                          height: 60,
+                                                          decoration: BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                              color:
+                                                                  hexStringToColor(
+                                                                      "ffcc66")),
+                                                          child:
+                                                              hideIcon == false
+                                                                  ? Icon(
+                                                                      Icons
+                                                                          .arrow_forward_ios,
+                                                                      color: Colors
+                                                                          .black
+                                                                          .withOpacity(
+                                                                              0.7),
+                                                                    )
+                                                                  : Container(),
+                                                        )),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            )),
-                      )),
-                  const SizedBox(
-                    height: 100,
+                              )),
+                        )),
                   ),
                 ])
           ],
