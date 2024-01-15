@@ -227,21 +227,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             padding: const EdgeInsets.fromLTRB(70, 0, 0, 0),
                             child: GestureDetector(
                               onTap: () {
-                                // authProvider.signInWithGoogle(context);
-                              },
-                              child: Image.asset(
-                                "assets/images/apple.png",
-                                height: 45,
-                                width: 45,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(70, 0, 0, 0),
-                            child: GestureDetector(
-                              onTap: () {
-                                // authProvider.signInWithGoogle(context);
+                                authProvider.signUpWithFacebook(context, () {
+                                  authProvider.saveUserDataToSP().then(
+                                        (value) => authProvider
+                                            .setSignIn()
+                                            .then((value) =>
+                                                Navigator.pushAndRemoveUntil(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: ((context) =>
+                                                            const SignUpScreenOther())),
+                                                    (route) => false)),
+                                      );
+                                });
                               },
                               child: Image.asset(
                                 "assets/images/facebook.png",

@@ -133,7 +133,10 @@ Future<void> linkEmail(BuildContext context, String firstName, String lastName,
     if (password.length >= 6) {
       if (await authProvider.checkIfUserExistsEmail(email)) {
         showSnackBar(
-            context, "Error!", "E-Mail already in use!", ContentType.failure);
+            context,
+            "Error!",
+            "E-Mail already in use! Please log in with the same provider you used to sign up!",
+            ContentType.failure);
         User? user = await authProvider.getCurrentUser();
         user?.delete();
         Navigator.pushAndRemoveUntil(
@@ -200,6 +203,7 @@ void storeDataPhoneNumber(BuildContext context, String firstName,
       phoneNumber: "",
       profilePic: "",
       createdAt: "",
+      provider: "phone",
       uid: "");
   authProvider.saveUserDataToFirebase(
     context: context,

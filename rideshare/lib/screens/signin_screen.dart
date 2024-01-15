@@ -308,20 +308,6 @@ class _SignInScreenState extends State<SignInScreen> {
                               // authProvider.signInWithGoogle(context);
                             },
                             child: Image.asset(
-                              "assets/images/apple.png",
-                              height: 45,
-                              width: 45,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(70, 0, 0, 0),
-                          child: GestureDetector(
-                            onTap: () {
-                              // authProvider.signInWithGoogle(context);
-                            },
-                            child: Image.asset(
                               "assets/images/facebook.png",
                               height: 45,
                               width: 45,
