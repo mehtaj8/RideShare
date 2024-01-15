@@ -18,6 +18,8 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   File? image;
   final TextEditingController _passwordTextController = TextEditingController();
+  final TextEditingController _confirmPasswordTextController =
+      TextEditingController();
   final TextEditingController _emailTextController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -29,6 +31,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void dispose() {
     super.dispose();
     _passwordTextController.dispose();
+    _confirmPasswordTextController.dispose();
     _emailTextController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
@@ -203,6 +206,63 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                           )),
 
+                      // Confirm Password Box
+                      Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: TextField(
+                            // Type of controller
+                            controller: _confirmPasswordTextController,
+
+                            // Configurations
+                            obscureText: isPasswordVisible,
+                            enableSuggestions: false,
+                            autocorrect: false,
+                            cursorColor: Colors.white,
+                            style:
+                                TextStyle(color: Colors.white.withOpacity(0.9)),
+
+                            // Add decoration to text box
+                            decoration: InputDecoration(
+                              // Prefixed icon
+                              prefixIcon: const Icon(
+                                Icons.lock_outline,
+                                color: Colors.white70,
+                              ),
+
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  isPasswordVisible
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.white70,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isPasswordVisible = !isPasswordVisible;
+                                  });
+                                },
+                              ),
+
+                              // Test Styling
+                              labelText: "Confirm Password",
+                              labelStyle: TextStyle(
+                                  color: Colors.white.withOpacity(0.9)),
+                              filled: false,
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.never,
+                              fillColor: Colors.white.withOpacity(0.3),
+
+                              // Border Styling
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderSide: const BorderSide(
+                                      color: Colors.white,
+                                      width: 2,
+                                      style: BorderStyle.solid)),
+                              border: const OutlineInputBorder(),
+                            ),
+                          )),
+
                       // Terms and Conditions
                       Padding(
                         padding: const EdgeInsets.fromLTRB(10, 20, 0, 0),
@@ -257,7 +317,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             if (_firstNameController.text != "" &&
                                 _lastNameController.text != "" &&
                                 _emailTextController.text != "" &&
-                                _passwordTextController.text != "") {
+                                _passwordTextController.text != "" &&
+                                _confirmPasswordTextController.text != "") {
                               if (image == null) {
                                 showSnackBar(
                                     context,
@@ -265,13 +326,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     "Please add a Profile Picture",
                                     ContentType.help);
                               } else {
-                                linkEmail(
-                                    context,
-                                    _firstNameController.text,
-                                    _lastNameController.text,
-                                    _emailTextController.text,
-                                    _passwordTextController.text,
-                                    image!);
+                                if (_passwordTextController.text ==
+                                    _confirmPasswordTextController.text) {
+                                  linkEmail(
+                                      context,
+                                      _firstNameController.text,
+                                      _lastNameController.text,
+                                      _emailTextController.text,
+                                      _passwordTextController.text,
+                                      image!);
+                                } else {
+                                  showSnackBar(
+                                      context,
+                                      "Oops!",
+                                      "Confirm Password does not match",
+                                      ContentType.failure);
+                                }
                               }
                             } else {
                               showSnackBar(

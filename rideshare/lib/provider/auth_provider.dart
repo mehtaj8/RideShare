@@ -6,11 +6,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:rideshare/model/user_model.dart';
 import 'package:rideshare/screens/home_screen.dart';
 import 'package:rideshare/screens/otp_screen.dart';
+import 'package:rideshare/screens/signin_screen.dart';
 import 'package:rideshare/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -104,16 +106,47 @@ class AuthenticationProvider extends ChangeNotifier {
 
     if (userDetails != null) {
       if (await checkIfUserExistsEmail(userDetails.email!)) {
-        await getUserDataFromFirebase().whenComplete(() {
-          setSignIn();
-          setAllInfoCollected();
-          Navigator.push(
-              context,
-              PageTransition(
-                  child: const HomeScreen(),
-                  type: PageTransitionType.fade,
-                  duration: const Duration(milliseconds: 300)));
-        });
+        if (await checkIfUserUsedGoogle(userDetails.email!)) {
+          await getUserDataFromFirebase().whenComplete(() {
+            setSignIn();
+            setAllInfoCollected();
+            Navigator.push(
+                context,
+                PageTransition(
+                    child: const HomeScreen(),
+                    type: PageTransitionType.fade,
+                    duration: const Duration(milliseconds: 300)));
+          });
+        } else if (await checkIfUserUsedFacebook(userDetails.email!) ||
+            await checkIfUserUsedPhone(userDetails.email!)) {
+          await getUserDataFromFirebase().whenComplete(() async {
+            _userModel!.provider = "google";
+            _uid = _userModel!.uid;
+
+            try {
+              await _firebaseFirestore
+                  .collection("users")
+                  .doc(_uid)
+                  .set(userModel.toMap())
+                  .whenComplete(() {
+                _isLoading = false;
+                notifyListeners();
+              });
+            } on FirebaseAuthException catch (e) {
+              showSnackBar(
+                  context, "Error", e.message.toString(), ContentType.failure);
+            }
+
+            setSignIn();
+            setAllInfoCollected();
+            Navigator.push(
+                context,
+                PageTransition(
+                    child: const HomeScreen(),
+                    type: PageTransitionType.fade,
+                    duration: const Duration(milliseconds: 300)));
+          });
+        }
       } else {
         _uid = userDetails.uid;
 
@@ -124,6 +157,7 @@ class AuthenticationProvider extends ChangeNotifier {
             phoneNumber: "",
             profilePic: userDetails.photoURL!,
             createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+            provider: "google",
             uid: userDetails.uid);
 
         _userModel = userModel;
@@ -142,6 +176,92 @@ class AuthenticationProvider extends ChangeNotifier {
               context, "Error", e.message.toString(), ContentType.failure);
         }
       }
+    }
+  }
+
+  // Sign Up with Facebook
+  void signUpWithFacebook(BuildContext context, Function onSuccess) async {
+    _isLoading = true;
+    notifyListeners();
+
+    final LoginResult loginResult =
+        await FacebookAuth.instance.login(permissions: ['email']);
+
+    if (loginResult.status == LoginStatus.success) {
+      final userData = await FacebookAuth.instance.getUserData();
+
+      if (await checkIfUserExistsEmail(userData['email'])) {
+        if (await checkIfUserUsedGoogle(userData['email'])) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SignInScreen()),
+          );
+          showSnackBar(context, "Oops!", "Please sign in using google",
+              ContentType.help);
+        } else if (await checkIfUserUsedPhone(userData['email'])) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => SignInScreen()),
+          );
+          showSnackBar(context, "Oops!",
+              "Please sign in with your email and password!", ContentType.help);
+        } else if (await checkIfUserUsedFacebook(userData['email'])) {
+          final AuthCredential authCredential =
+              FacebookAuthProvider.credential(loginResult.accessToken!.token);
+
+          await _firebaseAuth.signInWithCredential(authCredential);
+
+          await getUserDataFromFirebase().whenComplete(() {
+            setSignIn();
+            setAllInfoCollected();
+            Navigator.push(
+                context,
+                PageTransition(
+                    child: const HomeScreen(),
+                    type: PageTransitionType.fade,
+                    duration: const Duration(milliseconds: 300)));
+          });
+        }
+      } else {
+        final AuthCredential authCredential =
+            FacebookAuthProvider.credential(loginResult.accessToken!.token);
+
+        UserCredential result =
+            await _firebaseAuth.signInWithCredential(authCredential);
+
+        User? userDetails = result.user;
+
+        UserModel userModel = UserModel(
+            firstName: "",
+            lastName: "",
+            email: userData['email'],
+            phoneNumber: "",
+            profilePic: "",
+            createdAt: DateTime.now().millisecondsSinceEpoch.toString(),
+            provider: "facebook",
+            uid: userDetails!.uid);
+
+        _uid = userDetails.uid;
+        _userModel = userModel;
+
+        try {
+          await _firebaseFirestore
+              .collection("users")
+              .doc(_uid)
+              .set(userModel.toMap())
+              .whenComplete(() {
+            onSuccess();
+            _isLoading = false;
+            notifyListeners();
+          });
+        } on FirebaseAuthException catch (e) {
+          showSnackBar(
+              context, "Error", e.message.toString(), ContentType.failure);
+        }
+      }
+    } else {
+      showSnackBar(context, "Hmm...", "Seems something went wrong, try again!",
+          ContentType.failure);
     }
   }
 
@@ -291,6 +411,45 @@ class AuthenticationProvider extends ChangeNotifier {
     QuerySnapshot query = await _firebaseFirestore
         .collection("users")
         .where('email', isEqualTo: email)
+        .get();
+    if (query.docs.length == 0) {
+      return false;
+    }
+    return true;
+  }
+
+  // Check if user used google sign up
+  Future<bool> checkIfUserUsedGoogle(String email) async {
+    QuerySnapshot query = await _firebaseFirestore
+        .collection("users")
+        .where('email', isEqualTo: email)
+        .where('provider', isEqualTo: "google")
+        .get();
+    if (query.docs.length == 0) {
+      return false;
+    }
+    return true;
+  }
+
+  // Check if user used facebook sign up
+  Future<bool> checkIfUserUsedFacebook(String email) async {
+    QuerySnapshot query = await _firebaseFirestore
+        .collection("users")
+        .where('email', isEqualTo: email)
+        .where('provider', isEqualTo: "facebook")
+        .get();
+    if (query.docs.length == 0) {
+      return false;
+    }
+    return true;
+  }
+
+  // Check if user used phone to sign up
+  Future<bool> checkIfUserUsedPhone(String email) async {
+    QuerySnapshot query = await _firebaseFirestore
+        .collection("users")
+        .where('email', isEqualTo: email)
+        .where('provider', isEqualTo: "phone")
         .get();
     if (query.docs.length == 0) {
       return false;

@@ -110,16 +110,37 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                         child: InkWell(
                           onTap: () => selectImage(),
                           child: image == null
-                              ? CircleAvatar(
-                                  backgroundColor: Colors.transparent,
-                                  backgroundImage:
-                                      NetworkImage(_imageController.text),
-                                  radius: 50,
-                                )
+                              ? Container(
+                                  child: _imageController.text == ""
+                                      ? CircleAvatar(
+                                          backgroundColor:
+                                              hexStringToColor("ffcc66")
+                                                  .withOpacity(0.7),
+                                          radius: 50,
+                                          child: const Icon(
+                                            Icons.person_outline,
+                                            color: Colors.white,
+                                            size: 50,
+                                          ))
+                                      : CircleAvatar(
+                                          backgroundColor: Colors.transparent,
+                                          backgroundImage: NetworkImage(
+                                              _imageController.text),
+                                          radius: 50,
+                                        ))
                               : CircleAvatar(
                                   backgroundImage: FileImage(image!),
                                   radius: 50,
                                 ),
+                        ),
+                      ),
+
+                      // Add Profile Pic Text
+                      Container(
+                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                        child: const Text(
+                          "Please add a Profile Picture",
+                          style: TextStyle(color: Colors.white, fontSize: 15),
                         ),
                       ),
 

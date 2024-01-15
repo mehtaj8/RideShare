@@ -27,7 +27,8 @@ class MyApp extends StatelessWidget {
         final authProvider =
             Provider.of<AuthenticationProvider>(context, listen: false);
         authProvider.getUserDataFromFirebase().whenComplete(() {
-          if (authProvider.isSignedIn == true) {
+          if (authProvider.isSignedIn == true &&
+              authProvider.userModel.profilePic != "") {
             precacheImage(
                 NetworkImage(authProvider.userModel.profilePic), context);
           }
