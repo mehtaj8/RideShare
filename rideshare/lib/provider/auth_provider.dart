@@ -108,14 +108,7 @@ class AuthenticationProvider extends ChangeNotifier {
       if (await checkIfUserExistsEmail(userDetails.email!)) {
         if (await checkIfUserUsedGoogle(userDetails.email!)) {
           await getUserDataFromFirebase().whenComplete(() {
-            setSignIn();
-            setAllInfoCollected();
-            Navigator.push(
-                context,
-                PageTransition(
-                    child: const HomeScreen(),
-                    type: PageTransitionType.fade,
-                    duration: const Duration(milliseconds: 300)));
+            onSuccess();
           });
         } else if (await checkIfUserUsedFacebook(userDetails.email!) ||
             await checkIfUserUsedPhone(userDetails.email!)) {
@@ -212,14 +205,7 @@ class AuthenticationProvider extends ChangeNotifier {
           await _firebaseAuth.signInWithCredential(authCredential);
 
           await getUserDataFromFirebase().whenComplete(() {
-            setSignIn();
-            setAllInfoCollected();
-            Navigator.push(
-                context,
-                PageTransition(
-                    child: const HomeScreen(),
-                    type: PageTransitionType.fade,
-                    duration: const Duration(milliseconds: 300)));
+            onSuccess();
           });
         }
       } else {

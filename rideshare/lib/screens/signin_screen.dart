@@ -305,7 +305,20 @@ class _SignInScreenState extends State<SignInScreen> {
                           padding: const EdgeInsets.fromLTRB(70, 0, 0, 0),
                           child: GestureDetector(
                             onTap: () {
-                              // authProvider.signInWithGoogle(context);
+                              authProvider.signUpWithFacebook(context, () {
+                                authProvider.saveUserDataToSP().then(
+                                    (value) => authProvider.setSignIn().then(
+                                          (value) => authProvider
+                                              .setAllInfoCollected()
+                                              .then((value) =>
+                                                  Navigator.pushAndRemoveUntil(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: ((context) =>
+                                                              const HomeScreen())),
+                                                      (route) => false)),
+                                        ));
+                              });
                             },
                             child: Image.asset(
                               "assets/images/facebook.png",
