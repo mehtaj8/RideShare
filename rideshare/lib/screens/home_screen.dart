@@ -1,7 +1,9 @@
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:rideshare/provider/auth_provider.dart';
-import 'package:rideshare/screens/signin_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:rideshare/modules/profilemanagement_module/screens/profile_screen.dart';
+import 'package:rideshare/utils/color_utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -21,55 +23,39 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     return Scaffold(
-      body: Column(children: [
-        // Logout Button
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
-          child: ElevatedButton(
-            child: Text("Logout"),
-            onPressed: () {
-              authProvider.userSignOut().then((value) {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => SignInScreen()));
-              });
-            },
-          ),
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          color: hexStringToColor("6c7373"),
         ),
-
-        // Profile Pic
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 50, 0, 0),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  backgroundColor: Colors.transparent,
+        child: Column(children: [
+          // Profile Pic
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 100, 20, 0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageTransition(
+                      child: const ProfileScreen(),
+                      type: PageTransitionType.fade,
+                      duration: const Duration(milliseconds: 300)),
+                );
+              },
+              child: Container(
+                alignment: Alignment.topRight,
+                child: CircleAvatar(
+                  backgroundColor: Colors.white70,
                   backgroundImage:
                       NetworkImage(authProvider.userModel.profilePic),
-                  radius: 50,
-                )
-              ],
+                  radius: 20,
+                ),
+              ),
             ),
           ),
-        ),
-
-        // First Name
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
-          child: Text(authProvider.userModel.firstName),
-        ),
-
-        // Last Name
-        Text(authProvider.userModel.lastName),
-
-        // Phone Number
-        Text(authProvider.userModel.phoneNumber),
-
-        // Email
-        Text(authProvider.userModel.email),
-      ]),
+        ]),
+      ),
     );
   }
 }

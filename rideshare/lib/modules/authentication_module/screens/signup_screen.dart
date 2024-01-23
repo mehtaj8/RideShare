@@ -1,5 +1,4 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
-import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rideshare/provider/auth_provider.dart';
@@ -9,51 +8,33 @@ import 'dart:io';
 
 import 'package:rideshare/utils/utils.dart';
 
-class SignUpScreenOther extends StatefulWidget {
-  const SignUpScreenOther({super.key});
+class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
 
   @override
-  State<SignUpScreenOther> createState() => _SignUpScreenOtherState();
+  State<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenOtherState extends State<SignUpScreenOther> {
+class _SignUpScreenState extends State<SignUpScreen> {
   File? image;
-  final TextEditingController _imageController = TextEditingController();
+  final TextEditingController _passwordTextController = TextEditingController();
+  final TextEditingController _confirmPasswordTextController =
+      TextEditingController();
   final TextEditingController _emailTextController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _phoneNumberController = TextEditingController();
 
   bool isPasswordVisible = true;
   bool isChecked = false;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    getEmailAndPicture();
-  }
-
-  void getEmailAndPicture() async {
-    final authProvider =
-        Provider.of<AuthenticationProvider>(context, listen: true);
-
-    authProvider.getUserDataFromFirebase().whenComplete(
-      () {
-        setState(() {
-          _emailTextController.text = authProvider.userModel.email;
-          _imageController.text = authProvider.userModel.profilePic;
-        });
-      },
-    );
-  }
-
-  @override
   void dispose() {
     super.dispose();
+    _passwordTextController.dispose();
+    _confirmPasswordTextController.dispose();
     _emailTextController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _phoneNumberController.dispose();
   }
 
   // Selecting Image
@@ -68,7 +49,6 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
   Widget build(BuildContext context) {
     final isLoading =
         Provider.of<AuthenticationProvider>(context, listen: true).isLoading;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -84,8 +64,9 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
           child: isLoading == true
               ? Center(
                   child: CircularProgressIndicator(
-                    color: hexStringToColor("ffcc66").withOpacity(0.7),
-                  ),
+                      color: Colors
+                          .green //hexStringToColor("ffcc66").withOpacity(0.7),
+                      ),
                 )
               : SingleChildScrollView(
                   child: Padding(
@@ -110,24 +91,16 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                         child: InkWell(
                           onTap: () => selectImage(),
                           child: image == null
-                              ? Container(
-                                  child: _imageController.text == ""
-                                      ? CircleAvatar(
-                                          backgroundColor:
-                                              hexStringToColor("ffcc66")
-                                                  .withOpacity(0.7),
-                                          radius: 50,
-                                          child: const Icon(
-                                            Icons.person_outline,
-                                            color: Colors.white,
-                                            size: 50,
-                                          ))
-                                      : CircleAvatar(
-                                          backgroundColor: Colors.transparent,
-                                          backgroundImage: NetworkImage(
-                                              _imageController.text),
-                                          radius: 50,
-                                        ))
+                              ? CircleAvatar(
+                                  backgroundColor: hexStringToColor("ffcc66")
+                                      .withOpacity(0.7),
+                                  radius: 50,
+                                  child: const Icon(
+                                    Icons.person_outline,
+                                    color: Colors.white,
+                                    size: 50,
+                                  ),
+                                )
                               : CircleAvatar(
                                   backgroundImage: FileImage(image!),
                                   radius: 50,
@@ -173,96 +146,123 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                       // Email Box
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: reusableTextField(
-                            _emailTextController.text.trim(),
-                            Icons.email_outlined,
-                            _emailTextController,
-                            true),
+                        child: reusableTextField("E-Mail", Icons.email_outlined,
+                            _emailTextController, false),
                       ),
 
-                      // Phone Number Box
+                      // Password Box
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: TextField(
-                          // Type of controller
-                          controller: _phoneNumberController,
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: TextField(
+                            // Type of controller
+                            controller: _passwordTextController,
 
-                          // Configurations
-                          cursorColor: Colors.white,
-
-                          onChanged: (value) {
-                            setState(() {
-                              _phoneNumberController.text = value;
-                            });
-                          },
-                          style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 18),
-
-                          // Add decoration to text box
-                          decoration: InputDecoration(
-                            // Prefixed icon
-                            prefixIcon: Container(
-                              padding: const EdgeInsets.fromLTRB(10, 11, 10, 0),
-                              child: InkWell(
-                                onTap: () {
-                                  showCountryPicker(
-                                      context: context,
-                                      countryListTheme:
-                                          const CountryListThemeData(
-                                              bottomSheetHeight: 500),
-                                      onSelect: (value) {
-                                        setState(() {
-                                          selectedCountry = value;
-                                        });
-                                      });
-                                },
-                                child: Text(
-                                  "${selectedCountry.flagEmoji} + ${selectedCountry.phoneCode}",
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white.withOpacity(0.9)),
-                                ),
-                              ),
-                            ),
-
-                            suffixIcon:
-                                _phoneNumberController.text.trim().length > 9
-                                    ? Container(
-                                        height: 30,
-                                        width: 30,
-                                        margin: const EdgeInsets.fromLTRB(
-                                            0, 0, 10, 0),
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.green,
-                                        ),
-                                        child: const Icon(Icons.done,
-                                            color: Colors.white, size: 20),
-                                      )
-                                    : null,
-
-                            // Test Styling
-                            labelText: "Phone Number",
-                            labelStyle:
+                            // Configurations
+                            obscureText: isPasswordVisible,
+                            enableSuggestions: false,
+                            autocorrect: false,
+                            cursorColor: Colors.white,
+                            style:
                                 TextStyle(color: Colors.white.withOpacity(0.9)),
-                            filled: false,
-                            floatingLabelBehavior: FloatingLabelBehavior.never,
-                            fillColor: Colors.white.withOpacity(0.3),
 
-                            // Border Styling
-                            enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15.0),
-                                borderSide: const BorderSide(
-                                    color: Colors.white,
-                                    width: 2,
-                                    style: BorderStyle.solid)),
-                            border: const OutlineInputBorder(),
-                          ),
+                            // Add decoration to text box
+                            decoration: InputDecoration(
+                              // Prefixed icon
+                              prefixIcon: const Icon(
+                                Icons.lock_outline,
+                                color: Colors.white70,
+                              ),
 
-                          keyboardType: TextInputType.number,
-                        ),
-                      ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  isPasswordVisible
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.white70,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isPasswordVisible = !isPasswordVisible;
+                                  });
+                                },
+                              ),
+
+                              // Test Styling
+                              labelText: "Password",
+                              labelStyle: TextStyle(
+                                  color: Colors.white.withOpacity(0.9)),
+                              filled: false,
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.never,
+                              fillColor: Colors.white.withOpacity(0.3),
+
+                              // Border Styling
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderSide: const BorderSide(
+                                      color: Colors.white,
+                                      width: 2,
+                                      style: BorderStyle.solid)),
+                              border: const OutlineInputBorder(),
+                            ),
+                          )),
+
+                      // Confirm Password Box
+                      Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: TextField(
+                            // Type of controller
+                            controller: _confirmPasswordTextController,
+
+                            // Configurations
+                            obscureText: isPasswordVisible,
+                            enableSuggestions: false,
+                            autocorrect: false,
+                            cursorColor: Colors.white,
+                            style:
+                                TextStyle(color: Colors.white.withOpacity(0.9)),
+
+                            // Add decoration to text box
+                            decoration: InputDecoration(
+                              // Prefixed icon
+                              prefixIcon: const Icon(
+                                Icons.lock_outline,
+                                color: Colors.white70,
+                              ),
+
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  isPasswordVisible
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                  color: Colors.white70,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isPasswordVisible = !isPasswordVisible;
+                                  });
+                                },
+                              ),
+
+                              // Test Styling
+                              labelText: "Confirm Password",
+                              labelStyle: TextStyle(
+                                  color: Colors.white.withOpacity(0.9)),
+                              filled: false,
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.never,
+                              fillColor: Colors.white.withOpacity(0.3),
+
+                              // Border Styling
+                              enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderSide: const BorderSide(
+                                      color: Colors.white,
+                                      width: 2,
+                                      style: BorderStyle.solid)),
+                              border: const OutlineInputBorder(),
+                            ),
+                          )),
 
                       // Terms and Conditions
                       Padding(
@@ -315,33 +315,41 @@ class _SignUpScreenOtherState extends State<SignUpScreenOther> {
                         padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                         child: firebaseUIButton(context, "Create Account", () {
                           if (isChecked) {
-                            // Check if any are empty
-                            if (_firstNameController.text == "" ||
-                                _lastNameController.text == "" ||
-                                _phoneNumberController.text == "") {
+                            if (_firstNameController.text != "" &&
+                                _lastNameController.text != "" &&
+                                _emailTextController.text != "" &&
+                                _passwordTextController.text != "" &&
+                                _confirmPasswordTextController.text != "") {
+                              if (image == null) {
+                                showSnackBar(
+                                    context,
+                                    "Oops!",
+                                    "Please add a Profile Picture",
+                                    ContentType.help);
+                              } else {
+                                if (_passwordTextController.text ==
+                                    _confirmPasswordTextController.text) {
+                                  linkEmail(
+                                      context,
+                                      _firstNameController.text,
+                                      _lastNameController.text,
+                                      _emailTextController.text,
+                                      _passwordTextController.text,
+                                      image!);
+                                } else {
+                                  showSnackBar(
+                                      context,
+                                      "Oops!",
+                                      "Confirm Password does not match",
+                                      ContentType.failure);
+                                }
+                              }
+                            } else {
                               showSnackBar(
                                   context,
                                   "Oops!",
                                   "Please fill in all fields",
                                   ContentType.warning);
-                            }
-
-                            if (image != null) {
-                              linkPhoneNumberNewProfilePic(
-                                  context,
-                                  _firstNameController.text.trim(),
-                                  _lastNameController.text.trim(),
-                                  _emailTextController.text.trim(),
-                                  _phoneNumberController.text.trim(),
-                                  image);
-                            } else {
-                              linkPhoneNumber(
-                                  context,
-                                  _firstNameController.text.trim(),
-                                  _lastNameController.text.trim(),
-                                  _emailTextController.text.trim(),
-                                  _phoneNumberController.text.trim(),
-                                  _imageController.text.trim());
                             }
                           } else {
                             showSnackBar(

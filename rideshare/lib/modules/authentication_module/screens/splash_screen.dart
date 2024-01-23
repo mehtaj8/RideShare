@@ -6,8 +6,8 @@ import 'package:rideshare/reusable_widgets/reusable_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:rideshare/provider/auth_provider.dart';
 import 'package:rideshare/screens/home_screen.dart';
-import 'package:rideshare/screens/landing_screen.dart';
-import 'package:rideshare/screens/register_screen.dart';
+import 'package:rideshare/modules/authentication_module/screens/landing_screen.dart';
+import 'package:rideshare/modules/authentication_module/screens/register_screen.dart';
 import 'package:rideshare/utils/color_utils.dart';
 
 class SplashScreen extends StatefulWidget {

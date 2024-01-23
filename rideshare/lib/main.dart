@@ -2,14 +2,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:provider/provider.dart';
+import 'package:rideshare/firebase_options.dart';
 import 'package:rideshare/provider/auth_provider.dart';
-import 'package:rideshare/screens/splash_screen.dart';
+import 'package:rideshare/modules/authentication_module/screens/splash_screen.dart';
 
 Future<void> main() async {
   await GetStorage.init();
 
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 

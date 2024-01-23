@@ -4,7 +4,7 @@ import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 import 'package:rideshare/provider/auth_provider.dart';
 import 'package:rideshare/screens/home_screen.dart';
-import 'package:rideshare/screens/signup_screen.dart';
+import 'package:rideshare/modules/authentication_module/screens/signup_screen.dart';
 import 'package:rideshare/utils/color_utils.dart';
 
 class OtpScreen extends StatefulWidget {
@@ -38,8 +38,9 @@ class _OtpScreenState extends State<OtpScreen> {
           child: isLoading == true
               ? Center(
                   child: CircularProgressIndicator(
-                    color: hexStringToColor("ffcc66").withOpacity(0.7),
-                  ),
+                      color: Colors
+                          .black //hexStringToColor("ffcc66").withOpacity(0.7),
+                      ),
                 )
               : SingleChildScrollView(
                   child: Column(
