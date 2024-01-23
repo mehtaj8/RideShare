@@ -52,6 +52,8 @@ dependencies:
   email_validator: ^2.1.17
   google_sign_in: ^6.2.1
   flutter_facebook_auth: ^6.0.3
+  sliding_switch: ^1.1.0
+  animated_segmented_tab_control: ^1.2.1
 
 dev_dependencies:
   flutter_test:

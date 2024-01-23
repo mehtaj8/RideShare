@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:rideshare/animations/fade_animation.dart';
+import 'package:rideshare/animations/fadedown_animation.dart';
 import 'package:rideshare/reusable_widgets/reusable_widget.dart';
-import 'package:rideshare/screens/signin_screen.dart';
+import 'package:rideshare/modules/authentication_module/screens/signin_screen.dart';
 import 'package:rideshare/utils/color_utils.dart';
 
 class LandingScreen extends StatefulWidget {
@@ -89,7 +89,7 @@ class _LandingScreenState extends State<LandingScreen>
             Positioned(
               top: -50,
               left: 0,
-              child: FadeAnimation(
+              child: FadeDownAnimation(
                 1,
                 Container(
                     width: width,
@@ -106,7 +106,7 @@ class _LandingScreenState extends State<LandingScreen>
             Positioned(
               top: -100,
               left: 0,
-              child: FadeAnimation(
+              child: FadeDownAnimation(
                 1.3,
                 Container(
                     width: width,
@@ -123,7 +123,7 @@ class _LandingScreenState extends State<LandingScreen>
             Positioned(
               top: -150,
               left: 0,
-              child: FadeAnimation(
+              child: FadeDownAnimation(
                 1.6,
                 Container(
                     width: width,
@@ -145,7 +145,7 @@ class _LandingScreenState extends State<LandingScreen>
                   Container(
                     alignment: Alignment.topCenter,
                     margin: EdgeInsets.fromLTRB(0, 0, 0, 100),
-                    child: FadeAnimation(
+                    child: FadeDownAnimation(
                         2.4,
                         Column(
                           children: [
@@ -159,7 +159,7 @@ class _LandingScreenState extends State<LandingScreen>
                   Container(
                     alignment: Alignment.bottomCenter,
                     margin: EdgeInsets.fromLTRB(0, 0, 0, 150),
-                    child: FadeAnimation(
+                    child: FadeDownAnimation(
                         2.4,
                         Text(
                           "YOUR TRUSTED JOURNEY ACROSS CANADA",
@@ -174,7 +174,7 @@ class _LandingScreenState extends State<LandingScreen>
                   // Bottom Button
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 50, 0, 100),
-                    child: FadeAnimation(
+                    child: FadeDownAnimation(
                         2.4,
                         AnimatedBuilder(
                           animation: _scaleController,

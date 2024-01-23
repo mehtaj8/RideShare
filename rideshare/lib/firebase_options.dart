@@ -63,6 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '95015862324',
     projectId: 'rideshare-9cba5',
     storageBucket: 'rideshare-9cba5.appspot.com',
+    androidClientId: '95015862324-pdaq0bdj8iod0gq6knio5u5muc65ema1.apps.googleusercontent.com',
+    iosClientId: '95015862324-7tgc2fn3ua7grks20qpfrftcsiq67984.apps.googleusercontent.com',
     iosBundleId: 'com.personal.rideshare',
   );
 }

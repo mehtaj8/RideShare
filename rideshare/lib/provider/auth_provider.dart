@@ -10,9 +10,10 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:rideshare/model/user_model.dart';
+import 'package:rideshare/modules/authentication_module/screens/singup_screen_other.dart';
 import 'package:rideshare/screens/home_screen.dart';
-import 'package:rideshare/screens/otp_screen.dart';
-import 'package:rideshare/screens/signin_screen.dart';
+import 'package:rideshare/modules/authentication_module/screens/otp_screen.dart';
+import 'package:rideshare/modules/authentication_module/screens/signin_screen.dart';
 import 'package:rideshare/utils/utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -108,14 +109,27 @@ class AuthenticationProvider extends ChangeNotifier {
       if (await checkIfUserExistsEmail(userDetails.email!)) {
         if (await checkIfUserUsedGoogle(userDetails.email!)) {
           await getUserDataFromFirebase().whenComplete(() {
-            setSignIn();
-            setAllInfoCollected();
-            Navigator.push(
-                context,
-                PageTransition(
-                    child: const HomeScreen(),
-                    type: PageTransitionType.fade,
-                    duration: const Duration(milliseconds: 300)));
+            _isLoading = false;
+            notifyListeners();
+            if (userDetails.phoneNumber == null) {
+              saveUserDataToSP().then(
+                (value) => setSignIn().then((value) =>
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: ((context) => const SignUpScreenOther())),
+                        (route) => false)),
+              );
+            } else {
+              saveUserDataToSP().then((value) => setSignIn().then(
+                    (value) => setAllInfoCollected()
+                        .then((value) => Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: ((context) => const HomeScreen())),
+                            )),
+                  ));
+            }
           });
         } else if (await checkIfUserUsedFacebook(userDetails.email!) ||
             await checkIfUserUsedPhone(userDetails.email!)) {
@@ -211,15 +225,30 @@ class AuthenticationProvider extends ChangeNotifier {
 
           await _firebaseAuth.signInWithCredential(authCredential);
 
-          await getUserDataFromFirebase().whenComplete(() {
-            setSignIn();
-            setAllInfoCollected();
-            Navigator.push(
-                context,
-                PageTransition(
-                    child: const HomeScreen(),
-                    type: PageTransitionType.fade,
-                    duration: const Duration(milliseconds: 300)));
+          await getUserDataFromFirebase().whenComplete(() async {
+            if (!await checkIfUserExistsPhoneUsingEmail(userData['email'])) {
+              _isLoading = false;
+              notifyListeners();
+              saveUserDataToSP().then(
+                (value) => setSignIn().then((value) =>
+                    Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: ((context) => const SignUpScreenOther())),
+                        (route) => false)),
+              );
+            } else {
+              _isLoading = false;
+              notifyListeners();
+              saveUserDataToSP().then((value) => setSignIn().then(
+                    (value) => setAllInfoCollected()
+                        .then((value) => Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: ((context) => const HomeScreen())),
+                            )),
+                  ));
+            }
           });
         }
       } else {
@@ -267,6 +296,7 @@ class AuthenticationProvider extends ChangeNotifier {
 
   // Sign Up with Phone
   void signUpWithPhone(BuildContext context, String phoneNumber) async {
+    _firebaseAuth.setSettings(forceRecaptchaFlow: true);
     await _firebaseAuth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (PhoneAuthCredential phoneAuthCredential) async {
@@ -462,6 +492,20 @@ class AuthenticationProvider extends ChangeNotifier {
     QuerySnapshot query = await _firebaseFirestore
         .collection("users")
         .where('phoneNumber', isEqualTo: phoneNumber)
+        .get();
+    if (query.docs.length == 0) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  // Check if user phone number exists using email
+  Future<bool> checkIfUserExistsPhoneUsingEmail(String email) async {
+    QuerySnapshot query = await _firebaseFirestore
+        .collection("users")
+        .where('email', isEqualTo: email)
+        .where('phoneNumber', isNotEqualTo: "")
         .get();
     if (query.docs.length == 0) {
       return false;

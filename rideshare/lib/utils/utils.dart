@@ -11,7 +11,8 @@ import 'package:provider/provider.dart';
 import 'package:rideshare/model/user_model.dart';
 import 'package:rideshare/provider/auth_provider.dart';
 import 'package:rideshare/screens/home_screen.dart';
-import 'package:rideshare/screens/signin_screen.dart';
+import 'package:rideshare/modules/authentication_module/screens/signin_screen.dart';
+import 'package:intl/intl.dart';
 
 Country selectedCountry = Country(
     phoneCode: "1",
@@ -84,22 +85,29 @@ Future<void> sendPhoneNumber(BuildContext context, String phoneNumber) async {
 }
 
 // Link Phone Number
-void linkPhoneNumber(BuildContext context, String firstName, String lastName,
-    String email, String phoneNumber, String image) {
+Future<void> linkPhoneNumber(BuildContext context, String firstName,
+    String lastName, String email, String phoneNumber, String image) async {
   final authProvider =
       Provider.of<AuthenticationProvider>(context, listen: false);
   if (phoneNumber.length <= 9) {
     showSnackBar(context, "Error", "The Provided Phone Number is not Valid.",
         ContentType.failure);
   } else {
-    authProvider.setAllInfoCollected();
-    storeDataOther(context, firstName, lastName, email,
-        "+${selectedCountry.phoneCode}$phoneNumber", image);
-    authProvider.linkPhone(
-        context, "+${selectedCountry.phoneCode}$phoneNumber");
+    if (await authProvider
+        .checkIfUserExistsPhone("+${selectedCountry.phoneCode}$phoneNumber")) {
+      showSnackBar(
+          context, "Oops!", "Phone number already in use", ContentType.failure);
+    } else {
+      authProvider.setAllInfoCollected();
+      storeDataOther(context, firstName, lastName, email,
+          "+${selectedCountry.phoneCode}$phoneNumber", image);
+      authProvider.linkPhone(
+          context, "+${selectedCountry.phoneCode}$phoneNumber");
+    }
   }
 }
 
+// Link Phone Number if given a new profile pic
 Future<void> linkPhoneNumberNewProfilePic(
     BuildContext context,
     String firstName,
@@ -117,10 +125,16 @@ Future<void> linkPhoneNumberNewProfilePic(
     String uid = user!.uid;
     String profilePic =
         await authProvider.storeFileToStorage("profilePic/$uid", image!);
-    storeDataOther(context, firstName, lastName, email,
-        "+${selectedCountry.phoneCode}$phoneNumber", profilePic);
-    authProvider.linkPhone(
-        context, "+${selectedCountry.phoneCode}$phoneNumber");
+    if (await authProvider
+        .checkIfUserExistsPhone("+${selectedCountry.phoneCode}$phoneNumber")) {
+      showSnackBar(
+          context, "Oops!", "Phone number already in use", ContentType.failure);
+    } else {
+      storeDataOther(context, firstName, lastName, email,
+          "+${selectedCountry.phoneCode}$phoneNumber", profilePic);
+      authProvider.linkPhone(
+          context, "+${selectedCountry.phoneCode}$phoneNumber");
+    }
   }
 }
 
@@ -233,4 +247,10 @@ NetworkImage? getProfilePic(BuildContext context) {
     return NetworkImage(authProvider.userModel.profilePic);
   });
   return null;
+}
+
+// Convert Created At to MM/dd/yyyy
+String convertCreatedAt(String createdAt) {
+  var date = DateTime.fromMillisecondsSinceEpoch(int.parse(createdAt));
+  return DateFormat('MMM d yyyy').format(date);
 }

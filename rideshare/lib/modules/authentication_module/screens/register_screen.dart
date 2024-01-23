@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rideshare/reusable_widgets/reusable_widget.dart';
-import 'package:rideshare/screens/singup_screen_other.dart';
+import 'package:rideshare/modules/authentication_module/screens/singup_screen_other.dart';
 import 'package:rideshare/utils/color_utils.dart';
 import 'package:country_picker/country_picker.dart';
 import 'package:rideshare/provider/auth_provider.dart';
@@ -227,19 +227,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             padding: const EdgeInsets.fromLTRB(70, 0, 0, 0),
                             child: GestureDetector(
                               onTap: () {
-                                authProvider.signUpWithFacebook(context, () {
-                                  authProvider.saveUserDataToSP().then(
-                                        (value) => authProvider
-                                            .setSignIn()
-                                            .then((value) =>
-                                                Navigator.pushAndRemoveUntil(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: ((context) =>
-                                                            const SignUpScreenOther())),
-                                                    (route) => false)),
-                                      );
-                                });
+                                authProvider.signUpWithFacebook(context, () {});
                               },
                               child: Image.asset(
                                 "assets/images/facebook.png",

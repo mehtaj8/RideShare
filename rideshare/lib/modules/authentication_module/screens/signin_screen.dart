@@ -5,11 +5,11 @@ import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:rideshare/provider/auth_provider.dart';
 import 'package:rideshare/screens/home_screen.dart';
-import 'package:rideshare/screens/register_screen.dart';
+import 'package:rideshare/modules/authentication_module/screens/register_screen.dart';
 import 'package:rideshare/utils/color_utils.dart';
 import 'package:rideshare/reusable_widgets/reusable_widget.dart';
-import 'package:rideshare/screens/reset_password.dart';
-import 'package:rideshare/animations/fade_animation.dart';
+import 'package:rideshare/modules/authentication_module/screens/reset_password.dart';
+import 'package:rideshare/animations/fadedown_animation.dart';
 import 'package:rideshare/utils/utils.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -34,6 +34,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
     final authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
     return Scaffold(
@@ -61,7 +62,7 @@ class _SignInScreenState extends State<SignInScreen> {
         child: SingleChildScrollView(
           // Adding some padding to make the image center and at top of screen
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 100, 20, 0),
+            padding: EdgeInsets.fromLTRB(20, 100, 20, 0),
             child: Column(
               // The children in this Scroll View
               children: <Widget>[
@@ -70,7 +71,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   alignment: Alignment.topLeft,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
-                    child: FadeAnimation(
+                    child: FadeDownAnimation(
                       1,
                       Container(
                           width: 75,
@@ -89,7 +90,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   alignment: Alignment.topLeft,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: FadeAnimation(
+                    child: FadeDownAnimation(
                         1.3,
                         const Text(
                           "Welcome To RideShare,",
@@ -107,7 +108,7 @@ class _SignInScreenState extends State<SignInScreen> {
                   alignment: Alignment.topLeft,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 3, 0, 30),
-                    child: FadeAnimation(
+                    child: FadeDownAnimation(
                         1.3,
                         const Text(
                           "Connecting Canadians, One Journey at a Time!",
@@ -123,7 +124,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 // Username Input
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                  child: FadeAnimation(
+                  child: FadeDownAnimation(
                     1.6,
                     reusableTextField("E-Mail", Icons.email_outlined,
                         _emailTextController, false),
@@ -133,7 +134,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 // Password Input
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  child: FadeAnimation(
+                  child: FadeDownAnimation(
                     1.9,
                     TextField(
                       // Type of controller
@@ -190,10 +191,10 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
 
                 // Sign In button
-                FadeAnimation(1.8, forgetPassword(context)),
+                FadeDownAnimation(1.8, forgetPassword(context)),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-                  child: FadeAnimation(
+                  child: FadeDownAnimation(
                     2.1,
                     firebaseUIButton(context, "Sign In", () {
                       FirebaseAuth.instance
@@ -238,10 +239,10 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
 
                 // Or Sign In With
-                FadeAnimation(2.1, signUpOption()),
+                FadeDownAnimation(2.1, signUpOption()),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(5, 40, 5, 0),
-                  child: FadeAnimation(
+                  child: FadeDownAnimation(
                     2.4,
                     Row(
                       children: [
@@ -270,7 +271,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 ),
 
                 // Bottom Provider Buttons
-                FadeAnimation(
+                FadeDownAnimation(
                   2.4,
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 50, 0, 0),
@@ -279,20 +280,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            authProvider.signUpWithGoogle(context, () {
-                              authProvider.saveUserDataToSP().then(
-                                  (value) => authProvider.setSignIn().then(
-                                        (value) => authProvider
-                                            .setAllInfoCollected()
-                                            .then((value) =>
-                                                Navigator.pushReplacement(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                      builder: ((context) =>
-                                                          const HomeScreen())),
-                                                )),
-                                      ));
-                            });
+                            authProvider.signUpWithGoogle(context, () {});
                           },
                           child: Image.asset(
                             "assets/images/google.png",
@@ -305,7 +293,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           padding: const EdgeInsets.fromLTRB(70, 0, 0, 0),
                           child: GestureDetector(
                             onTap: () {
-                              // authProvider.signInWithGoogle(context);
+                              authProvider.signUpWithFacebook(context, () {});
                             },
                             child: Image.asset(
                               "assets/images/facebook.png",
