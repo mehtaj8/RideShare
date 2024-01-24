@@ -1,12 +1,12 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:provider/provider.dart';
 import 'package:rideshare/animations/fade_animation1.dart';
 import 'package:rideshare/animations/fade_animation2.dart';
+import 'package:rideshare/modules/profilemanagement_module/screens/driver_screen.dart';
 import 'package:rideshare/modules/profilemanagement_module/screens/settings_screen.dart';
+import 'package:rideshare/modules/profilemanagement_module/screens/userProfile_screen.dart';
 import 'package:rideshare/utils/color_utils.dart';
-import 'package:rideshare/provider/auth_provider.dart';
 import 'package:rideshare/utils/utils.dart';
 import 'package:sliding_switch/sliding_switch.dart';
 
@@ -23,9 +23,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider =
-        Provider.of<AuthenticationProvider>(context, listen: false);
-
     return Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -45,6 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Align(
                     child: Center(
+                      // Top Sliding Switch
                       child: SlidingSwitch(
                         height: 40,
                         width: 200,
@@ -117,6 +115,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
+
+                  // Settings Button
                   Positioned(
                     top: 8,
                     right: 30,
@@ -139,103 +139,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             screenState == true
-                ? FadeAnimation1(
-                    1,
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              alignment: Alignment.topLeft,
-                              margin: EdgeInsets.fromLTRB(40, 40, 0, 0),
-                              child: CircleAvatar(
-                                backgroundColor: Colors.white70,
-                                backgroundImage: NetworkImage(
-                                    authProvider.userModel.profilePic),
-                                radius: 30,
-                              ),
-                            ),
-                            Column(
-                                // First Name
-                                children: [
-                                  Row(children: [
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          5, 40, 5, 0),
-                                      child: Text(
-                                        authProvider.userModel.firstName,
-                                        textScaler: TextScaler.linear(1.5),
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-
-                                    // Last Name
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                          0, 40, 0, 0),
-                                      child: Text(
-                                        authProvider.userModel.lastName,
-                                        textScaler: TextScaler.linear(1.5),
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                  ]),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.fromLTRB(20, 0, 0, 0),
-                                    child: Text(
-                                      "Joined: ${convertCreatedAt(authProvider.userModel.createdAt)}",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ]),
-                          ],
-                        ),
-                      ],
-                    ))
+                ? FadeAnimation1(1, UserProfileScreen())
                 : FadeAnimation2(
                     1,
-                    Column(children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: Container(
-                          alignment: Alignment.topCenter,
-                          child: const Text(
-                            "Driver Account",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Logout Button
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
-                        child: ElevatedButton(
-                          child: Text("Save"),
-                          onPressed: () {
-                            setState(() {
-                              allInfoFilledIn = true;
-                            });
-                          },
-                        ),
-                      ),
-
-                      // Logout Button
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
-                        child: ElevatedButton(
-                          child: Text("Unsave"),
-                          onPressed: () {
-                            setState(() {
-                              allInfoFilledIn = false;
-                            });
-                          },
-                        ),
-                      ),
-                    ]),
+                    DriverScreen(
+                      allInfoFilledIn: allInfoFilledIn,
+                    ),
                   )
           ]),
         ));
