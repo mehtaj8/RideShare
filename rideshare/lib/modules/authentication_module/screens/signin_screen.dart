@@ -34,7 +34,6 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
     final authProvider =
         Provider.of<AuthenticationProvider>(context, listen: false);
     return Scaffold(

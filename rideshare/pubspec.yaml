@@ -54,6 +54,9 @@ dependencies:
   flutter_facebook_auth: ^6.0.3
   sliding_switch: ^1.1.0
   animated_segmented_tab_control: ^1.2.1
+  sliding_up_panel: ^2.0.0+1
+  slide_switcher: ^1.1.2
+  toggle_switch: ^2.1.0
 
 dev_dependencies:
   flutter_test:
